@@ -1,0 +1,389 @@
+# filippo.io/edwards25519 v1.1.0
+## explicit; go 1.20
+filippo.io/edwards25519
+filippo.io/edwards25519/field
+# github.com/aliyun/aliyun-oss-go-sdk v3.0.2+incompatible
+## explicit
+github.com/aliyun/aliyun-oss-go-sdk/oss
+# github.com/bytedance/sonic v1.9.1
+## explicit; go 1.15
+github.com/bytedance/sonic
+github.com/bytedance/sonic/ast
+github.com/bytedance/sonic/decoder
+github.com/bytedance/sonic/encoder
+github.com/bytedance/sonic/internal/caching
+github.com/bytedance/sonic/internal/cpu
+github.com/bytedance/sonic/internal/decoder
+github.com/bytedance/sonic/internal/encoder
+github.com/bytedance/sonic/internal/jit
+github.com/bytedance/sonic/internal/loader
+github.com/bytedance/sonic/internal/native
+github.com/bytedance/sonic/internal/native/avx
+github.com/bytedance/sonic/internal/native/avx2
+github.com/bytedance/sonic/internal/native/sse
+github.com/bytedance/sonic/internal/native/types
+github.com/bytedance/sonic/internal/resolver
+github.com/bytedance/sonic/internal/rt
+github.com/bytedance/sonic/loader
+github.com/bytedance/sonic/option
+github.com/bytedance/sonic/unquote
+github.com/bytedance/sonic/utf8
+# github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311
+## explicit; go 1.15
+github.com/chenzhuoyu/base64x
+# github.com/clbanning/mxj v1.8.4
+## explicit
+github.com/clbanning/mxj
+# github.com/dgrijalva/jwt-go v3.2.0+incompatible
+## explicit
+github.com/dgrijalva/jwt-go
+# github.com/gabriel-vasile/mimetype v1.4.2
+## explicit; go 1.20
+github.com/gabriel-vasile/mimetype
+github.com/gabriel-vasile/mimetype/internal/charset
+github.com/gabriel-vasile/mimetype/internal/json
+github.com/gabriel-vasile/mimetype/internal/magic
+# github.com/gin-contrib/sse v0.1.0
+## explicit; go 1.12
+github.com/gin-contrib/sse
+# github.com/gin-gonic/gin v1.9.1
+## explicit; go 1.20
+github.com/gin-gonic/gin
+github.com/gin-gonic/gin/binding
+github.com/gin-gonic/gin/internal/bytesconv
+github.com/gin-gonic/gin/internal/json
+github.com/gin-gonic/gin/render
+# github.com/go-playground/locales v0.14.1
+## explicit; go 1.17
+github.com/go-playground/locales
+github.com/go-playground/locales/currency
+# github.com/go-playground/universal-translator v0.18.1
+## explicit; go 1.18
+github.com/go-playground/universal-translator
+# github.com/go-playground/validator/v10 v10.14.0
+## explicit; go 1.18
+github.com/go-playground/validator/v10
+# github.com/go-sql-driver/mysql v1.8.1
+## explicit; go 1.18
+github.com/go-sql-driver/mysql
+# github.com/goccy/go-json v0.10.2
+## explicit; go 1.12
+github.com/goccy/go-json
+github.com/goccy/go-json/internal/decoder
+github.com/goccy/go-json/internal/encoder
+github.com/goccy/go-json/internal/encoder/vm
+github.com/goccy/go-json/internal/encoder/vm_color
+github.com/goccy/go-json/internal/encoder/vm_color_indent
+github.com/goccy/go-json/internal/encoder/vm_indent
+github.com/goccy/go-json/internal/errors
+github.com/goccy/go-json/internal/runtime
+# github.com/gofrs/flock v0.8.1
+## explicit
+github.com/gofrs/flock
+# github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
+## explicit
+github.com/golang/freetype
+github.com/golang/freetype/raster
+github.com/golang/freetype/truetype
+# github.com/golang/snappy v0.0.4
+## explicit
+github.com/golang/snappy
+# github.com/google/go-querystring v1.0.0
+## explicit
+github.com/google/go-querystring/query
+# github.com/gorilla/securecookie v1.1.1
+## explicit
+github.com/gorilla/securecookie
+# github.com/gorilla/sessions v1.2.1
+## explicit
+github.com/gorilla/sessions
+# github.com/json-iterator/go v1.1.12
+## explicit; go 1.12
+github.com/json-iterator/go
+# github.com/klauspost/cpuid/v2 v2.2.4
+## explicit; go 1.15
+github.com/klauspost/cpuid/v2
+# github.com/leodido/go-urn v1.2.4
+## explicit; go 1.16
+github.com/leodido/go-urn
+# github.com/ma-guo/admin-core v0.0.5
+## explicit
+github.com/ma-guo/admin-core/app/common/consts
+github.com/ma-guo/admin-core/app/v1/protos
+github.com/ma-guo/admin-core/app/v1/views
+github.com/ma-guo/admin-core/boot
+github.com/ma-guo/admin-core/config
+github.com/ma-guo/admin-core/utils
+github.com/ma-guo/admin-core/utils/bearer
+github.com/ma-guo/admin-core/utils/captcha
+github.com/ma-guo/admin-core/utils/fileupload
+github.com/ma-guo/admin-core/utils/password
+github.com/ma-guo/admin-core/xorm/daos
+github.com/ma-guo/admin-core/xorm/models
+github.com/ma-guo/admin-core/xorm/services
+# github.com/mattn/go-isatty v0.0.19
+## explicit; go 1.15
+github.com/mattn/go-isatty
+# github.com/mitchellh/mapstructure v1.4.3
+## explicit; go 1.14
+github.com/mitchellh/mapstructure
+# github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
+## explicit
+github.com/modern-go/concurrent
+# github.com/modern-go/reflect2 v1.0.2
+## explicit; go 1.12
+github.com/modern-go/reflect2
+# github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826
+## explicit
+github.com/mohae/deepcopy
+# github.com/mojocn/base64Captcha v1.3.6
+## explicit; go 1.16
+github.com/mojocn/base64Captcha
+# github.com/mozillazg/go-httpheader v0.2.1
+## explicit
+github.com/mozillazg/go-httpheader
+# github.com/patrickmn/go-cache v2.1.0+incompatible
+## explicit
+github.com/patrickmn/go-cache
+# github.com/pelletier/go-toml/v2 v2.0.8
+## explicit; go 1.16
+github.com/pelletier/go-toml/v2
+github.com/pelletier/go-toml/v2/internal/characters
+github.com/pelletier/go-toml/v2/internal/danger
+github.com/pelletier/go-toml/v2/internal/tracker
+github.com/pelletier/go-toml/v2/unstable
+# github.com/qiniu/go-sdk/v7 v7.20.1
+## explicit; go 1.14
+github.com/qiniu/go-sdk/v7
+github.com/qiniu/go-sdk/v7/auth
+github.com/qiniu/go-sdk/v7/auth/qbox
+github.com/qiniu/go-sdk/v7/client
+github.com/qiniu/go-sdk/v7/conf
+github.com/qiniu/go-sdk/v7/internal/cache
+github.com/qiniu/go-sdk/v7/internal/clientv2
+github.com/qiniu/go-sdk/v7/internal/context
+github.com/qiniu/go-sdk/v7/internal/freezer
+github.com/qiniu/go-sdk/v7/internal/hostprovider
+github.com/qiniu/go-sdk/v7/internal/io
+github.com/qiniu/go-sdk/v7/internal/log
+github.com/qiniu/go-sdk/v7/reqid
+github.com/qiniu/go-sdk/v7/storage
+github.com/qiniu/go-sdk/v7/storagev2/apis
+github.com/qiniu/go-sdk/v7/storagev2/apis/add_bucket_rules
+github.com/qiniu/go-sdk/v7/storagev2/apis/async_fetch_object
+github.com/qiniu/go-sdk/v7/storagev2/apis/batch_ops
+github.com/qiniu/go-sdk/v7/storagev2/apis/copy_object
+github.com/qiniu/go-sdk/v7/storagev2/apis/create_bucket
+github.com/qiniu/go-sdk/v7/storagev2/apis/delete_bucket
+github.com/qiniu/go-sdk/v7/storagev2/apis/delete_bucket_rules
+github.com/qiniu/go-sdk/v7/storagev2/apis/delete_bucket_taggings
+github.com/qiniu/go-sdk/v7/storagev2/apis/delete_object
+github.com/qiniu/go-sdk/v7/storagev2/apis/delete_object_after_days
+github.com/qiniu/go-sdk/v7/storagev2/apis/fetch_object
+github.com/qiniu/go-sdk/v7/storagev2/apis/get_async_fetch_task
+github.com/qiniu/go-sdk/v7/storagev2/apis/get_bucket_cors_rules
+github.com/qiniu/go-sdk/v7/storagev2/apis/get_bucket_domains
+github.com/qiniu/go-sdk/v7/storagev2/apis/get_bucket_quota
+github.com/qiniu/go-sdk/v7/storagev2/apis/get_bucket_rules
+github.com/qiniu/go-sdk/v7/storagev2/apis/get_bucket_taggings
+github.com/qiniu/go-sdk/v7/storagev2/apis/get_buckets
+github.com/qiniu/go-sdk/v7/storagev2/apis/get_buckets_v4
+github.com/qiniu/go-sdk/v7/storagev2/apis/get_objects
+github.com/qiniu/go-sdk/v7/storagev2/apis/get_objects_v2
+github.com/qiniu/go-sdk/v7/storagev2/apis/get_regions
+github.com/qiniu/go-sdk/v7/storagev2/apis/modify_object_life_cycle
+github.com/qiniu/go-sdk/v7/storagev2/apis/modify_object_metadata
+github.com/qiniu/go-sdk/v7/storagev2/apis/modify_object_status
+github.com/qiniu/go-sdk/v7/storagev2/apis/move_object
+github.com/qiniu/go-sdk/v7/storagev2/apis/post_object
+github.com/qiniu/go-sdk/v7/storagev2/apis/prefetch_object
+github.com/qiniu/go-sdk/v7/storagev2/apis/restore_archived_object
+github.com/qiniu/go-sdk/v7/storagev2/apis/resumable_upload_v1_bput
+github.com/qiniu/go-sdk/v7/storagev2/apis/resumable_upload_v1_make_block
+github.com/qiniu/go-sdk/v7/storagev2/apis/resumable_upload_v1_make_file
+github.com/qiniu/go-sdk/v7/storagev2/apis/resumable_upload_v2_abort_multipart_upload
+github.com/qiniu/go-sdk/v7/storagev2/apis/resumable_upload_v2_complete_multipart_upload
+github.com/qiniu/go-sdk/v7/storagev2/apis/resumable_upload_v2_initiate_multipart_upload
+github.com/qiniu/go-sdk/v7/storagev2/apis/resumable_upload_v2_list_parts
+github.com/qiniu/go-sdk/v7/storagev2/apis/resumable_upload_v2_upload_part
+github.com/qiniu/go-sdk/v7/storagev2/apis/set_bucket_access_mode
+github.com/qiniu/go-sdk/v7/storagev2/apis/set_bucket_cors_rules
+github.com/qiniu/go-sdk/v7/storagev2/apis/set_bucket_max_age
+github.com/qiniu/go-sdk/v7/storagev2/apis/set_bucket_private
+github.com/qiniu/go-sdk/v7/storagev2/apis/set_bucket_quota
+github.com/qiniu/go-sdk/v7/storagev2/apis/set_bucket_remark
+github.com/qiniu/go-sdk/v7/storagev2/apis/set_bucket_taggings
+github.com/qiniu/go-sdk/v7/storagev2/apis/set_buckets_mirror
+github.com/qiniu/go-sdk/v7/storagev2/apis/set_object_file_type
+github.com/qiniu/go-sdk/v7/storagev2/apis/stat_object
+github.com/qiniu/go-sdk/v7/storagev2/apis/update_bucket_rules
+github.com/qiniu/go-sdk/v7/storagev2/credentials
+github.com/qiniu/go-sdk/v7/storagev2/errors
+github.com/qiniu/go-sdk/v7/storagev2/http_client
+github.com/qiniu/go-sdk/v7/storagev2/region
+github.com/qiniu/go-sdk/v7/storagev2/uptoken
+# github.com/richardlehane/mscfb v1.0.4
+## explicit
+github.com/richardlehane/mscfb
+# github.com/richardlehane/msoleps v1.0.3
+## explicit
+github.com/richardlehane/msoleps/types
+# github.com/syndtr/goleveldb v1.0.0
+## explicit
+github.com/syndtr/goleveldb/leveldb
+github.com/syndtr/goleveldb/leveldb/cache
+github.com/syndtr/goleveldb/leveldb/comparer
+github.com/syndtr/goleveldb/leveldb/errors
+github.com/syndtr/goleveldb/leveldb/filter
+github.com/syndtr/goleveldb/leveldb/iterator
+github.com/syndtr/goleveldb/leveldb/journal
+github.com/syndtr/goleveldb/leveldb/memdb
+github.com/syndtr/goleveldb/leveldb/opt
+github.com/syndtr/goleveldb/leveldb/storage
+github.com/syndtr/goleveldb/leveldb/table
+github.com/syndtr/goleveldb/leveldb/util
+# github.com/tencentyun/cos-go-sdk-v5 v0.7.47
+## explicit; go 1.12
+github.com/tencentyun/cos-go-sdk-v5
+# github.com/twitchyliquid64/golang-asm v0.15.1
+## explicit; go 1.13
+github.com/twitchyliquid64/golang-asm/asm/arch
+github.com/twitchyliquid64/golang-asm/bio
+github.com/twitchyliquid64/golang-asm/dwarf
+github.com/twitchyliquid64/golang-asm/goobj
+github.com/twitchyliquid64/golang-asm/obj
+github.com/twitchyliquid64/golang-asm/obj/arm
+github.com/twitchyliquid64/golang-asm/obj/arm64
+github.com/twitchyliquid64/golang-asm/obj/mips
+github.com/twitchyliquid64/golang-asm/obj/ppc64
+github.com/twitchyliquid64/golang-asm/obj/riscv
+github.com/twitchyliquid64/golang-asm/obj/s390x
+github.com/twitchyliquid64/golang-asm/obj/wasm
+github.com/twitchyliquid64/golang-asm/obj/x86
+github.com/twitchyliquid64/golang-asm/objabi
+github.com/twitchyliquid64/golang-asm/src
+github.com/twitchyliquid64/golang-asm/sys
+github.com/twitchyliquid64/golang-asm/unsafeheader
+# github.com/ugorji/go/codec v1.2.11
+## explicit; go 1.11
+github.com/ugorji/go/codec
+# github.com/xuri/efp v0.0.0-20231025114914-d1ff6096ae53
+## explicit; go 1.11
+github.com/xuri/efp
+# github.com/xuri/excelize/v2 v2.8.1
+## explicit; go 1.18
+github.com/xuri/excelize/v2
+# github.com/xuri/nfp v0.0.0-20230919160717-d98342af3f05
+## explicit; go 1.15
+github.com/xuri/nfp
+# github.com/ziipin-server/niuhe v1.1.1
+## explicit; go 1.19
+github.com/ziipin-server/niuhe
+github.com/ziipin-server/niuhe/db
+# github.com/ziipin-server/zpform v1.0.0
+## explicit
+github.com/ziipin-server/zpform
+# golang.org/x/arch v0.3.0
+## explicit; go 1.17
+golang.org/x/arch/x86/x86asm
+# golang.org/x/crypto v0.19.0
+## explicit; go 1.18
+golang.org/x/crypto/bcrypt
+golang.org/x/crypto/blowfish
+golang.org/x/crypto/md4
+golang.org/x/crypto/ripemd160
+golang.org/x/crypto/sha3
+# golang.org/x/image v0.14.0
+## explicit; go 1.18
+golang.org/x/image/font
+golang.org/x/image/math/fixed
+# golang.org/x/net v0.21.0
+## explicit; go 1.18
+golang.org/x/net/html
+golang.org/x/net/html/atom
+golang.org/x/net/html/charset
+golang.org/x/net/http/httpguts
+golang.org/x/net/http2
+golang.org/x/net/http2/h2c
+golang.org/x/net/http2/hpack
+golang.org/x/net/idna
+# golang.org/x/sync v0.1.0
+## explicit
+golang.org/x/sync/singleflight
+# golang.org/x/sys v0.17.0
+## explicit; go 1.18
+golang.org/x/sys/cpu
+golang.org/x/sys/unix
+# golang.org/x/text v0.14.0
+## explicit; go 1.18
+golang.org/x/text/cases
+golang.org/x/text/encoding
+golang.org/x/text/encoding/charmap
+golang.org/x/text/encoding/htmlindex
+golang.org/x/text/encoding/internal
+golang.org/x/text/encoding/internal/identifier
+golang.org/x/text/encoding/japanese
+golang.org/x/text/encoding/korean
+golang.org/x/text/encoding/simplifiedchinese
+golang.org/x/text/encoding/traditionalchinese
+golang.org/x/text/encoding/unicode
+golang.org/x/text/feature/plural
+golang.org/x/text/internal
+golang.org/x/text/internal/catmsg
+golang.org/x/text/internal/format
+golang.org/x/text/internal/language
+golang.org/x/text/internal/language/compact
+golang.org/x/text/internal/number
+golang.org/x/text/internal/stringset
+golang.org/x/text/internal/tag
+golang.org/x/text/internal/utf8internal
+golang.org/x/text/language
+golang.org/x/text/message
+golang.org/x/text/message/catalog
+golang.org/x/text/runes
+golang.org/x/text/secure/bidirule
+golang.org/x/text/transform
+golang.org/x/text/unicode/bidi
+golang.org/x/text/unicode/norm
+# golang.org/x/time v0.5.0
+## explicit; go 1.18
+golang.org/x/time/rate
+# google.golang.org/protobuf v1.30.0
+## explicit; go 1.11
+google.golang.org/protobuf/encoding/protowire
+google.golang.org/protobuf/internal/detrand
+google.golang.org/protobuf/internal/encoding/messageset
+google.golang.org/protobuf/internal/errors
+google.golang.org/protobuf/internal/flags
+google.golang.org/protobuf/internal/genid
+google.golang.org/protobuf/internal/order
+google.golang.org/protobuf/internal/pragma
+google.golang.org/protobuf/internal/strs
+google.golang.org/protobuf/proto
+google.golang.org/protobuf/reflect/protoreflect
+google.golang.org/protobuf/reflect/protoregistry
+google.golang.org/protobuf/runtime/protoiface
+# gopkg.in/yaml.v2 v2.4.0
+## explicit; go 1.15
+gopkg.in/yaml.v2
+# gopkg.in/yaml.v3 v3.0.1
+## explicit
+gopkg.in/yaml.v3
+# xorm.io/builder v0.3.11-0.20220531020008-1bd24a7dc978
+## explicit; go 1.11
+xorm.io/builder
+# xorm.io/xorm v1.3.9
+## explicit; go 1.18
+xorm.io/xorm
+xorm.io/xorm/caches
+xorm.io/xorm/contexts
+xorm.io/xorm/convert
+xorm.io/xorm/core
+xorm.io/xorm/dialects
+xorm.io/xorm/internal/json
+xorm.io/xorm/internal/statements
+xorm.io/xorm/internal/utils
+xorm.io/xorm/log
+xorm.io/xorm/names
+xorm.io/xorm/schemas
+xorm.io/xorm/tags

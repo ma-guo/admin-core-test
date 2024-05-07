@@ -1,0 +1,9 @@
+serveraddr: :9999
+loglevel: INFO
+db:
+  showsql: false
+  debug: true
+  sync: true
+  main: root:dequankim@tcp(localhost:3306)/admincoretest?charset=utf8mb4
+host: http://localhost:9999
+fileprefix: admin

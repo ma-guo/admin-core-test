@@ -1,0 +1,11 @@
+#app=admincoretest
+
+class NoneReq(Message):
+    pass
+
+class NoneRsp(Message):
+    pass
+
+
+with services():
+    GET('测试  api', '/api/system/test/', NoneReq, wraps(NoneRsp))
