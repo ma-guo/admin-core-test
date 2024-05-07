@@ -1,5 +1,5 @@
 # 本 demo 说明
-本项目演示使用 vscode 插件 `niuhe` 接入项目 [admin-core](https://github.com/ma-guo/admin-core/) 例子。
+本项目演示使用 vscode 插件 `niuhe` 接入项目 [admin-core](https://github.com/ma-guo/admin-core/) 例子。前端项目为 [vue3-element-admin](https://github.com/ma-guo/vue3-element-admin)
 ### 1. 定义 niuhe 文件
  在 `niuhe/all.niuhe` 文件下定义一个 api, 然后点击 `</>` 按钮 生成 `go` 项目代码
 ```python
