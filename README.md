@@ -1,7 +1,7 @@
 # 本 demo 说明
-本项目演示使用 vscode niuhe 插件 admin-core 接入例子。 
+本项目演示使用 vscode `niuhe` 插件 ![admin-core](https://github.com/ma-guo/admin-core/) 接入例子。
 ### 1. 定义 niuhe 文件
- 在 `niuhe/all.niuhe` 文件下定义一个 api, 然后点击 `</>` 按钮 生成 go 项目代码
+ 在 `niuhe/all.niuhe` 文件下定义一个 api, 然后点击 `</>` 按钮 生成 `go` 项目代码
 ```python
 #app=admincoretest
 
@@ -13,10 +13,10 @@ class NoneRsp(Message):
 
 
 with services():
-    GET('测试  api', '/api/system/test/', NoneReq, wraps(NoneRsp))
+    GET('测试 api', '/api/system/test/', NoneReq, wraps(NoneRsp))
 ```
 ### 2. 修改配置文件
-在配置 conf/admincoretest.yaml 文件中添加第8和第9行并修改第7行的数据库连接信息
+在配置 `conf/admincoretest.yaml` 文件中添加第8和第9行并修改第7行的数据库连接信息
 ### 3. 接入 AdminBoot
 在 `src/admincoretest/main.go` 中接入 `AdminBoot`
 ```go
@@ -32,7 +32,7 @@ with services():
 	boot.Serve(svr)
 }
 ```
-上述 `main` 方式是自定生成的, 将 `AdminBoot` 引入, 初始化 config(`LoadConfig`) 并 `RegisterModules 即可`
+上述 `main` 方式是自定生成的, 将 `AdminBoot` 引入, 初始化 config(`LoadConfig`) 并 `RegisterModules` 即可
 ```go
 // adminBoot "github.com/ma-guo/admin-core/boot" // import
  func main() {
@@ -52,6 +52,8 @@ with services():
 	boot.Serve(svr)
 }
 ```
+进过上面三步即可接入 `admin-core` 项目, 在 vscode 下可愉快地使用 `niuhe` 插件加速您的项目开发了。
+
 下面为插件自动生成的文档说明
 
 
