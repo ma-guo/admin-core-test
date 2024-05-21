@@ -5,7 +5,7 @@ package views
 import (
 	"admincoretest/app/api/protos"
 
-	"github.com/ziipin-server/niuhe"
+	"github.com/ma-guo/niuhe"
 )
 
 type System struct {
@@ -16,6 +16,12 @@ type System struct {
 func (v *System) Test_GET(c *niuhe.Context, req *protos.NoneReq, rsp *protos.NoneRsp) error {
 	return niuhe.NewCommError(-1, "Not Implemented")
 }
+
+// 测试  api
+func (v *System) Test_PUT(c *niuhe.Context, req *protos.NoneReq, rsp *protos.NoneRsp) error {
+	return niuhe.NewCommError(-1, "Not Implemented")
+}
+
 func init() {
 	GetModule().Register(&System{})
 }

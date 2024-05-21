@@ -10,7 +10,7 @@ import (
 
 	adminBoot "github.com/ma-guo/admin-core/boot"
 
-	"github.com/ziipin-server/niuhe"
+	"github.com/ma-guo/niuhe"
 )
 
 type baseBoot struct{}

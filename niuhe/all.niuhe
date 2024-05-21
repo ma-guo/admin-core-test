@@ -1,4 +1,5 @@
 #app=admincoretest
+#langs=ts
 
 class NoneReq(Message):
     pass
@@ -8,4 +9,5 @@ class NoneRsp(Message):
 
 
 with services():
-    GET('测试  api', '/api/system/test/', NoneReq, wraps(NoneRsp))
+    GET('测试  api', '/api/system/test/', NoneReq, NoneRsp)
+    PUT('测试  api', '/api/system/test/', NoneReq,NoneRsp)

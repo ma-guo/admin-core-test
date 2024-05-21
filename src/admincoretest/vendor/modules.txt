@@ -106,7 +106,7 @@ github.com/klauspost/cpuid/v2
 # github.com/leodido/go-urn v1.2.4
 ## explicit; go 1.16
 github.com/leodido/go-urn
-# github.com/ma-guo/admin-core v0.0.5
+# github.com/ma-guo/admin-core v0.0.7
 ## explicit
 github.com/ma-guo/admin-core/app/common/consts
 github.com/ma-guo/admin-core/app/v1/protos
@@ -121,6 +121,13 @@ github.com/ma-guo/admin-core/utils/password
 github.com/ma-guo/admin-core/xorm/daos
 github.com/ma-guo/admin-core/xorm/models
 github.com/ma-guo/admin-core/xorm/services
+# github.com/ma-guo/niuhe v0.0.2
+## explicit
+github.com/ma-guo/niuhe
+github.com/ma-guo/niuhe/db
+# github.com/ma-guo/zpform v0.0.0-20170321024527-2a7c38cb444e
+## explicit
+github.com/ma-guo/zpform
 # github.com/mattn/go-isatty v0.0.19
 ## explicit; go 1.15
 github.com/mattn/go-isatty

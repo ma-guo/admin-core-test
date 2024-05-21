@@ -5,12 +5,17 @@ package views
 import (
 	"admincoretest/app/api/protos"
 
-	"github.com/ziipin-server/niuhe"
+	"github.com/ma-guo/niuhe"
 )
 
 type _Gen_System struct{}
 
 // 测试  api
 func (v *_Gen_System) Test_GET(c *niuhe.Context, req *protos.NoneReq, rsp *protos.NoneRsp) error {
-	return niuhe.NewCommError(-1, "Not Implemented")
+	return niuhe.NewCommError(-1, "Not Implemented GET")
+}
+
+// 测试  api
+func (v *_Gen_System) Test_PUT(c *niuhe.Context, req *protos.NoneReq, rsp *protos.NoneRsp) error {
+	return niuhe.NewCommError(-1, "Not Implemented PUT")
 }

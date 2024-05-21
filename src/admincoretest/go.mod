@@ -4,7 +4,8 @@ go 1.21.5
 
 require (
 	github.com/go-sql-driver/mysql v1.8.1
-	github.com/ma-guo/admin-core v0.0.5
+	github.com/ma-guo/admin-core v0.0.7
+	github.com/ma-guo/niuhe v0.0.2
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/ziipin-server/niuhe v1.1.1
 	gopkg.in/yaml.v2 v2.4.0
@@ -34,6 +35,7 @@ require (
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.4 // indirect
 	github.com/leodido/go-urn v1.2.4 // indirect
+	github.com/ma-guo/zpform v0.0.0-20170321024527-2a7c38cb444e // indirect
 	github.com/mattn/go-isatty v0.0.19 // indirect
 	github.com/mitchellh/mapstructure v1.4.3 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
