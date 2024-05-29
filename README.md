@@ -54,6 +54,12 @@ with services():
 ```
 进过上面三步即可接入 `admin-core` 项目, 在 vscode 下可愉快地使用 `niuhe` 插件加速您的项目开发了。
 
+### 4. 自定义方法支持验证
+1. 自定义方法需要加入 `Bearea` 认证的请参考 `src/admincoretest/views/init.go` 中的使用
+2. 需要修改 `Bearea` 认证盐请在配置文件中配置 `secretkey` 值
+
+
+
 下面为插件自动生成的文档说明
 
 

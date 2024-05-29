@@ -106,7 +106,7 @@ github.com/klauspost/cpuid/v2
 # github.com/leodido/go-urn v1.2.4
 ## explicit; go 1.16
 github.com/leodido/go-urn
-# github.com/ma-guo/admin-core v0.0.7
+# github.com/ma-guo/admin-core v0.1.0
 ## explicit
 github.com/ma-guo/admin-core/app/common/consts
 github.com/ma-guo/admin-core/app/v1/protos

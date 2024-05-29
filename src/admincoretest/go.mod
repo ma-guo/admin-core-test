@@ -4,7 +4,7 @@ go 1.21.5
 
 require (
 	github.com/go-sql-driver/mysql v1.8.1
-	github.com/ma-guo/admin-core v0.0.7
+	github.com/ma-guo/admin-core v0.1.0
 	github.com/ma-guo/niuhe v0.0.2
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/ziipin-server/niuhe v1.1.1
