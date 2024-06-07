@@ -1,13 +1,16 @@
 #app=admincoretest
 #langs=ts
 
+include('qixi.niuhe')
 class NoneReq(Message):
     pass
 
 class NoneRsp(Message):
     pass
 
+class SystemTestReq(Message):
+    world = required.StringField(desc='hello world')
 
 with services():
-    GET('测试  api', '/api/system/test/', NoneReq, NoneRsp)
-    PUT('测试  api', '/api/system/test/', NoneReq,NoneRsp)
+    GET('测试  api', '/api/system/test/', SystemTestReq, NoneRsp)
+    PUT('测试  api', '/api/system/test/', NoneReq, NoneRsp)

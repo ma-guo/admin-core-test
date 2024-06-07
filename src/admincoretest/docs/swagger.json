@@ -1,0 +1,90 @@
+{
+    "consumes": [
+        "application/x-www-form-urlencoded"
+    ],
+    "produces": [
+        "application/json"
+    ],
+    "schemes": [
+        "http",
+        "https"
+    ],
+    "swagger": "2.0",
+    "info": {
+        "title": "牛河",
+        "description": "牛河插件自动生成的接口文档, 可直接导入 apifox 使用",
+        "contact": {
+            "email": "xxx.qq.com"
+        },
+        "version": "3.0.0",
+        "license": {
+            "name": "MIT",
+            "url": "github"
+        }
+    },
+    "host": "localhost",
+    "basePath": "",
+    "paths": {
+        "/api/system/test/": {
+            "put": {
+                "description": "测试  api",
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ],
+                "tags": [
+                    "系统API"
+                ],
+                "summary": "测试  api",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "json response",
+                        "schema": {
+                            "$ref": "#/definitions/Admincoretest.NoneRsp"
+                        },
+                        "examples": {
+                            "application/json": {
+                                "result": 0,
+                                "data": {}
+                            }
+                        }
+                    }
+                },
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json"
+                ]
+            }
+        }
+    },
+    "properties": {
+        "Admincoretest.SystemTestReq": {
+            "type": "object",
+            "properties": {
+                "world": {
+                    "type": "string",
+                    "description": "hello world"
+                }
+            }
+        },
+        "Admincoretest.NoneRsp": {
+            "type": "object",
+            "properties": {}
+        },
+        "Admincoretest.NoneReq": {
+            "type": "object",
+            "properties": {}
+        }
+    },
+    "securityDefinitions": {
+        "bearer": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
+}

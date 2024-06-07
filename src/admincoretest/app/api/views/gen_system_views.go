@@ -11,11 +11,11 @@ import (
 type _Gen_System struct{}
 
 // 测试  api
-func (v *_Gen_System) Test_GET(c *niuhe.Context, req *protos.NoneReq, rsp *protos.NoneRsp) error {
-	return niuhe.NewCommError(-1, "Not Implemented GET")
+func (v *_Gen_System) Test_GET(c *niuhe.Context, req *protos.SystemTestReq, rsp *protos.NoneRsp) error {
+	return niuhe.NewCommError(-1, "Not Implemented")
 }
 
 // 测试  api
 func (v *_Gen_System) Test_PUT(c *niuhe.Context, req *protos.NoneReq, rsp *protos.NoneRsp) error {
-	return niuhe.NewCommError(-1, "Not Implemented PUT")
+	return niuhe.NewCommError(-1, "Not Implemented")
 }

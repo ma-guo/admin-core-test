@@ -12,7 +12,7 @@ func GetModule() *niuhe.Module {
 	if thisModule == nil {
 		// thisModule = niuhe.NewModule("api")
 		// 不支持验证的路由
-		coreViews.AddSkipUrl("/api/system/test/")
+		// coreViews.AddSkipUrl("/api/system/test/")
 		thisModule = niuhe.NewModuleWithProtocolFactoryFunc("api", func() niuhe.IApiProtocol {
 			return coreViews.GetProtocol()
 		})
