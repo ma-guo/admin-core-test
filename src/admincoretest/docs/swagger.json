@@ -67,7 +67,7 @@
             "properties": {
                 "world": {
                     "type": "string",
-                    "description": "hello world"
+                    "description": "输入一个词 示例: hello world"
                 }
             }
         },

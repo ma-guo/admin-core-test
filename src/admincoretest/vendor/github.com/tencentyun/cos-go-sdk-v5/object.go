@@ -57,6 +57,9 @@ type presignedURLTestingOptions struct {
 //
 // https://www.qcloud.com/document/product/436/7753
 func (s *ObjectService) Get(ctx context.Context, name string, opt *ObjectGetOptions, id ...string) (*Response, error) {
+	if s.client.Conf.ObjectKeySimplifyCheck && !CheckObjectKeySimplify("/"+name) {
+		return nil, ObjectKeySimplifyCheckErr
+	}
 	var u string
 	if len(id) == 1 {
 		u = fmt.Sprintf("/%s?versionId=%s", encodeURIComponent(name), id[0])
@@ -124,7 +127,15 @@ type PresignedURLOptions struct {
 // GetPresignedURL get the object presigned to down or upload file by url
 // 预签名函数，signHost: 默认签入Header Host, 您也可以选择不签入Header Host，但可能导致请求失败或安全漏洞
 func (s *ObjectService) GetPresignedURL(ctx context.Context, httpMethod, name, ak, sk string, expired time.Duration, opt interface{}, signHost ...bool) (*url.URL, error) {
-	name = encodeURIComponent(name)
+	if name == "" {
+		return nil, fmt.Errorf("object key is empty.")
+	}
+	// 兼容 name 以 / 开头的情况
+	if strings.HasPrefix(name, "/") {
+		name = encodeURIComponent("/") + encodeURIComponent(name[1:], []byte{'/'})
+	} else {
+		name = encodeURIComponent(name, []byte{'/'})
+	}
 
 	sendOpt := sendOptions{
 		baseURL:   s.client.BaseURL.BucketURL,
@@ -187,7 +198,91 @@ func (s *ObjectService) GetPresignedURL(ctx context.Context, httpMethod, name, a
 }
 
 func (s *ObjectService) GetPresignedURL2(ctx context.Context, httpMethod, name string, expired time.Duration, opt interface{}, signHost ...bool) (*url.URL, error) {
-	name = encodeURIComponent(name)
+	if name == "" {
+		return nil, fmt.Errorf("object key is empty.")
+	}
+	// 兼容 name 以 / 开头的情况
+	if strings.HasPrefix(name, "/") {
+		name = encodeURIComponent("/") + encodeURIComponent(name[1:], []byte{'/'})
+	} else {
+		name = encodeURIComponent(name, []byte{'/'})
+	}
+
+	cred := s.client.GetCredential()
+	if cred == nil {
+		return nil, fmt.Errorf("GetCredential failed")
+	}
+	sendOpt := sendOptions{
+		baseURL:   s.client.BaseURL.BucketURL,
+		uri:       "/" + name,
+		method:    httpMethod,
+		optQuery:  opt,
+		optHeader: opt,
+	}
+	var authTime *AuthTime
+	mark := "?"
+	if opt != nil {
+		if popt, ok := opt.(*presignedURLTestingOptions); ok {
+			authTime = popt.authTime
+		}
+		if popt, ok := opt.(*PresignedURLOptions); ok {
+			if popt.Query != nil {
+				qs := popt.Query.Encode()
+				if qs != "" {
+					sendOpt.uri = fmt.Sprintf("%s?%s", sendOpt.uri, qs)
+					mark = "&"
+				}
+			}
+			if popt.AuthTime != nil {
+				authTime = popt.AuthTime
+			}
+		}
+	}
+	if cred.SessionToken != "" {
+		sendOpt.uri = fmt.Sprintf("%s%s%s", sendOpt.uri, mark, url.Values{"x-cos-security-token": []string{cred.SessionToken}}.Encode())
+	}
+
+	req, err := s.client.newRequest(ctx, sendOpt.baseURL, sendOpt.uri, sendOpt.method, sendOpt.body, sendOpt.optQuery, sendOpt.optHeader)
+	if err != nil {
+		return nil, err
+	}
+
+	if authTime == nil {
+		authTime = NewAuthTime(expired)
+	}
+	signedHost := true
+	if len(signHost) > 0 {
+		signedHost = signHost[0]
+	}
+	authorization := newAuthorization(cred.SecretID, cred.SecretKey, req, authTime, signedHost)
+	if opt != nil {
+		if opt, ok := opt.(*PresignedURLOptions); ok {
+			if opt.SignMerged {
+				sign := encodeURIComponent(authorization)
+				if req.URL.RawQuery == "" {
+					req.URL.RawQuery = fmt.Sprintf("sign=%s", sign)
+				} else {
+					req.URL.RawQuery = fmt.Sprintf("%s&sign=%s", req.URL.RawQuery, sign)
+				}
+				return req.URL, nil
+			}
+		}
+	}
+	sign := encodeURIComponent(authorization, []byte{'&', '='})
+
+	if req.URL.RawQuery == "" {
+		req.URL.RawQuery = fmt.Sprintf("%s", sign)
+	} else {
+		req.URL.RawQuery = fmt.Sprintf("%s&%s", req.URL.RawQuery, sign)
+	}
+	return req.URL, nil
+}
+
+func (s *ObjectService) GetPresignedURL3(ctx context.Context, httpMethod, name string, expired time.Duration, opt interface{}, signHost ...bool) (*url.URL, error) {
+	if name == "" {
+		return nil, fmt.Errorf("object key is empty.")
+	}
+	name = encodeURIComponent(name, []byte("/"))
 
 	cred := s.client.GetCredential()
 	if cred == nil {
@@ -370,6 +465,7 @@ func (s *ObjectService) Put(ctx context.Context, name string, r io.Reader, uopt 
 	if opt.innerSwitchURL != nil {
 		sUrl = opt.innerSwitchURL
 	}
+	retryErr := &RetryError{}
 	for nr := 0; nr < count; nr++ {
 		reader := TeeReader(r, nil, totalBytes, nil)
 		if s.client.Conf.EnableCRC {
@@ -385,8 +481,13 @@ func (s *ObjectService) Put(ctx context.Context, name string, r io.Reader, uopt 
 			body:      reader,
 			optHeader: opt,
 		}
+
+		// 把上一次错误记录下来
+		if err != nil {
+			retryErr.Add(err)
+		}
 		resp, err = s.client.send(ctx, &sendOpt)
-		sUrl, retrieable = s.client.CheckRetrieable(sUrl, resp, err)
+		sUrl, retrieable = s.client.CheckRetrieable(sUrl, resp, err, nr >= count-2)
 		if retrieable && nr+1 < count {
 			if seeker, ok := r.(io.Seeker); ok {
 				_, e := seeker.Seek(position, io.SeekStart)
@@ -398,6 +499,13 @@ func (s *ObjectService) Put(ctx context.Context, name string, r io.Reader, uopt 
 		}
 		break
 	}
+	if err != nil {
+		if _, ok := err.(*ErrorResponse); !ok {
+			retryErr.Add(err)
+			err = retryErr
+		}
+	}
+
 	return resp, err
 }
 
@@ -484,6 +592,9 @@ type ObjectCopyResult struct {
 //
 // https://cloud.tencent.com/document/product/436/10881
 func (s *ObjectService) Copy(ctx context.Context, name, sourceURL string, opt *ObjectCopyOptions, id ...string) (*ObjectCopyResult, *Response, error) {
+	if strings.HasPrefix(sourceURL, "http://") || strings.HasPrefix(sourceURL, "https://") {
+		return nil, nil, errors.New("sourceURL format is invalid.")
+	}
 	surl := strings.SplitN(sourceURL, "/", 2)
 	if len(surl) < 2 {
 		return nil, nil, errors.New(fmt.Sprintf("x-cos-copy-source format error: %s", sourceURL))
@@ -492,7 +603,12 @@ func (s *ObjectService) Copy(ctx context.Context, name, sourceURL string, opt *O
 	if len(id) == 1 {
 		u = fmt.Sprintf("%s/%s?versionId=%s", surl[0], encodeURIComponent(surl[1]), id[0])
 	} else if len(id) == 0 {
-		u = fmt.Sprintf("%s/%s", surl[0], encodeURIComponent(surl[1]))
+		keyAndVer := strings.SplitN(surl[1], "?", 2)
+		if len(keyAndVer) < 2 {
+			u = fmt.Sprintf("%s/%s", surl[0], encodeURIComponent(surl[1], []byte{'/'}))
+		} else {
+			u = fmt.Sprintf("%v/%v?%v", surl[0], encodeURIComponent(keyAndVer[0], []byte{'/'}), encodeURIComponent(keyAndVer[1], []byte{'='}))
+		}
 	} else {
 		return nil, nil, errors.New("wrong params")
 	}
@@ -553,10 +669,14 @@ type ObjectDeleteOptions struct {
 // https://www.qcloud.com/document/product/436/7743
 func (s *ObjectService) Delete(ctx context.Context, name string, opt ...*ObjectDeleteOptions) (*Response, error) {
 	var optHeader *ObjectDeleteOptions
-	// When use "" string might call the delete bucket interface
 	if len(name) == 0 || name == "/" {
 		return nil, errors.New("empty object name")
 	}
+	// When use "" string might call the delete bucket interface
+	if s.client.Conf.ObjectKeySimplifyCheck && !CheckObjectKeySimplify("/"+name) {
+		return nil, ObjectKeySimplifyCheckErr
+	}
+
 	if len(opt) > 0 {
 		optHeader = opt[0]
 	}
@@ -603,7 +723,7 @@ func (s *ObjectService) Head(ctx context.Context, name string, opt *ObjectHeadOp
 	}
 	resp, err := s.client.doRetry(ctx, &sendOpt)
 	if resp != nil && resp.Header["X-Cos-Object-Type"] != nil && resp.Header["X-Cos-Object-Type"][0] == "appendable" {
-		resp.Header.Add("x-cos-next-append-position", resp.Header["Content-Length"][0])
+		resp.Header.Add("x-cos-next-append-position", resp.Header.Get("Content-Length"))
 	}
 
 	return resp, err
@@ -1398,6 +1518,10 @@ func (s *ObjectService) checkDownloadedParts(opt *MultiDownloadCPInfo, chfile st
 }
 
 func (s *ObjectService) Download(ctx context.Context, name string, filepath string, opt *MultiDownloadOptions, id ...string) (*Response, error) {
+	// key 校验
+	if s.client.Conf.ObjectKeySimplifyCheck && !CheckObjectKeySimplify("/"+name) {
+		return nil, ObjectKeySimplifyCheckErr
+	}
 	// 参数校验
 	if opt == nil {
 		opt = &MultiDownloadOptions{}
@@ -1499,6 +1623,14 @@ func (s *ObjectService) Download(ctx context.Context, name string, filepath stri
 		go downloadWorker(ctx, s, chjobs, chresults)
 	}
 
+	var listener ProgressListener
+	var consumedBytes int64
+	if opt.Opt != nil && opt.Opt.Listener != nil {
+		listener = opt.Opt.Listener
+	}
+	event := newProgressEvent(ProgressStartedEvent, 0, 0, totalBytes)
+	progressCallback(listener, event)
+
 	go func() {
 		for _, chunk := range chunks {
 			if chunk.Done {
@@ -1526,6 +1658,11 @@ func (s *ObjectService) Download(ctx context.Context, name string, filepath stri
 	err = nil
 	for i := 0; i < partNum; i++ {
 		if chunks[i].Done {
+			if err == nil {
+				consumedBytes += chunks[i].Size
+				event = newProgressEvent(ProgressDataEvent, chunks[i].Size, consumedBytes, totalBytes)
+				progressCallback(listener, event)
+			}
 			continue
 		}
 		res := <-chresults
@@ -1543,12 +1680,19 @@ func (s *ObjectService) Download(ctx context.Context, name string, filepath stri
 			})
 			json.NewEncoder(cpfd).Encode(resumableInfo)
 		}
+
+		// 更新进度
+		consumedBytes += chunks[res.PartNumber-1].Size
+		event = newProgressEvent(ProgressDataEvent, chunks[res.PartNumber-1].Size, consumedBytes, totalBytes)
+		progressCallback(listener, event)
 	}
 	close(chresults)
 	if cpfd != nil {
 		cpfd.Close()
 	}
 	if err != nil {
+		event = newProgressEvent(ProgressFailedEvent, 0, consumedBytes, totalBytes, err)
+		progressCallback(listener, event)
 		return nil, err
 	}
 	// 下载成功，删除checkpoint文件
@@ -1570,6 +1714,9 @@ func (s *ObjectService) Download(ctx context.Context, name string, filepath stri
 			return resp, fmt.Errorf("verification failed, want:%v, return:%v, header:%+v", icoscrc, localcrc, resp.Header)
 		}
 	}
+	event = newProgressEvent(ProgressCompletedEvent, 0, consumedBytes, totalBytes)
+	progressCallback(listener, event)
+
 	return resp, err
 }
 
@@ -1633,8 +1780,12 @@ func (s *ObjectService) GetTagging(ctx context.Context, name string, opt ...inte
 }
 
 func (s *ObjectService) DeleteTagging(ctx context.Context, name string, opt ...interface{}) (*Response, error) {
+	// When use "" string might call the delete bucket interface
 	if len(name) == 0 || name == "/" {
 		return nil, errors.New("empty object name")
+	}
+	if s.client.Conf.ObjectKeySimplifyCheck && !CheckObjectKeySimplify("/"+name) {
+		return nil, ObjectKeySimplifyCheckErr
 	}
 	var optHeader *ObjectGetTaggingOptions
 	u := fmt.Sprintf("/%s?tagging", encodeURIComponent(name))

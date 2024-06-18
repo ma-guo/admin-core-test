@@ -3,7 +3,7 @@ package niuhe
 import (
 	"reflect"
 
-	"github.com/ziipin-server/zpform"
+	"github.com/ma-guo/zpform"
 )
 
 type isCustomRoot interface {
@@ -18,6 +18,9 @@ type IApiProtocol interface {
 type DefaultApiProtocol struct{}
 
 func (self DefaultApiProtocol) Read(c *Context, reqValue reflect.Value) error {
+	if c.Request.Method != "GET" {
+		return NewCommError(-1, "测试环境不支持修改数据")
+	}
 	if err := zpform.ReadReflectedStructForm(c.Request, reqValue); err != nil {
 		return NewCommError(-1, err.Error())
 	}

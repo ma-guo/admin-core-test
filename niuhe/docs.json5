@@ -28,4 +28,8 @@
     system: '系统API',
   },
   format: true, // 是否格式化 json 输出, 默认为 true
+  rsp: {
+    result: 'result',
+    data: 'data',
+  }
 }

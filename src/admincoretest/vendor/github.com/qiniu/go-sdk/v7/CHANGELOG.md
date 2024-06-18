@@ -1,9 +1,28 @@
 # Changelog
+
+## 7.21.1
+* 修复
+  * 修复通过 ResumeUploaderV2 上传的文件无法正确设置 Content-Type 的问题
+
+## 7.21.0
+* 新增
+  * 统一环境变量和配置文件
+  * 新版存储客户端库 storagev2 包，包含
+    * 新的 [resolver](github.com/qiniu/go-sdk/v7/storagev2/resolver) 包设计，可以为 HTTP 客户端指定域名解析器
+    * 新的 [chooser](github.com/qiniu/go-sdk/v7/storagev2/chooser) 包设计，可以为 HTTP 客户端选择成功率较高的 IP 地址
+    * 新的 [backoff](github.com/qiniu/go-sdk/v7/storagev2/backoff) 包设计，可以为 HTTP 客户端指定重试退避时长
+    * 新的 [retrier](github.com/qiniu/go-sdk/v7/storagev2/retrier) 包设计，可以为 HTTP 客户端指定重试策略
+    * 为 HTTP 客户端新增 uplog 机制
+
+## 7.20.2
+* 修复
+  * 修复通过 FormUploader 上传的文件无法正确设置 Content-Type 的问题
+
 ## 7.20.1
 * 新增
   * 获取区域 API 支持单独配置 UC 域名
   * BucketManager List Bucket 接口支持返回文件的 parts
-  
+
 ## 7.20.0
 * 新增
   * 新版存储客户端库 storagev2 包，包含

@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"path/filepath"
 	"reflect"
 	"strings"
 	"text/template"
@@ -24,7 +25,7 @@ import (
 
 const (
 	// Version current go sdk version
-	Version               = "0.7.47"
+	Version               = "0.7.50"
 	UserAgent             = "cos-go-sdk-v5/" + Version
 	contentTypeXML        = "application/xml"
 	defaultServiceBaseURL = "http://service.cos.myqcloud.com"
@@ -47,6 +48,8 @@ var (
 	accelerateDomainSuffix = "accelerate.myqcloud.com"
 	oldDomainSuffix        = ".myqcloud.com"
 	newDomainSuffix        = ".tencentcos.cn"
+
+	ObjectKeySimplifyCheckErr = fmt.Errorf("The Getobject Key is illegal")
 )
 
 // BaseURL 访问各 API 所需的基础 URL
@@ -99,9 +102,10 @@ type RetryOptions struct {
 	AutoSwitchHost bool
 }
 type Config struct {
-	EnableCRC        bool
-	RequestBodyClose bool
-	RetryOpt         RetryOptions
+	EnableCRC              bool
+	RequestBodyClose       bool
+	RetryOpt               RetryOptions
+	ObjectKeySimplifyCheck bool
 }
 
 // Client is a client manages communication with the COS API.
@@ -155,8 +159,9 @@ func NewClient(uri *BaseURL, httpClient *http.Client) *Client {
 			RetryOpt: RetryOptions{
 				Count:          3,
 				Interval:       time.Duration(0),
-				AutoSwitchHost: true,
+				AutoSwitchHost: false,
 			},
+			ObjectKeySimplifyCheck: true,
 		},
 	}
 	c.common.client = c
@@ -378,14 +383,14 @@ func toSwitchHost(oldURL *url.URL) *url.URL {
 	return newURL
 }
 
-func (c *Client) CheckRetrieable(u *url.URL, resp *Response, err error) (*url.URL, bool) {
+func (c *Client) CheckRetrieable(u *url.URL, resp *Response, err error, secondLast bool) (*url.URL, bool) {
 	res := u
 	if err != nil && err != invalidBucketErr {
 		// 不重试
 		if resp != nil && resp.StatusCode < 500 {
 			return res, false
 		}
-		if c.Conf.RetryOpt.AutoSwitchHost {
+		if c.Conf.RetryOpt.AutoSwitchHost && secondLast {
 			// 收不到报文 或者 不存在RequestId
 			if resp == nil || resp.Header.Get("X-Cos-Request-Id") == "" {
 				res = toSwitchHost(u)
@@ -407,10 +412,15 @@ func (c *Client) doRetry(ctx context.Context, opt *sendOptions) (resp *Response,
 	if c.Conf.RetryOpt.Count > 0 {
 		count = c.Conf.RetryOpt.Count
 	}
+	retryErr := &RetryError{}
 	var retrieable bool
 	for nr := 0; nr < count; nr++ {
+		// 把上一次错误记录下来
+		if err != nil {
+			retryErr.Add(err)
+		}
 		resp, err = c.send(ctx, opt)
-		opt.baseURL, retrieable = c.CheckRetrieable(opt.baseURL, resp, err)
+		opt.baseURL, retrieable = c.CheckRetrieable(opt.baseURL, resp, err, nr >= count-2)
 		if retrieable {
 			if c.Conf.RetryOpt.Interval > 0 && nr+1 < count {
 				time.Sleep(c.Conf.RetryOpt.Interval)
@@ -418,6 +428,13 @@ func (c *Client) doRetry(ctx context.Context, opt *sendOptions) (resp *Response,
 			continue
 		}
 		break
+	}
+	// 最后一次非COS错误，输出三次结果
+	if err != nil {
+		if _, ok := err.(*ErrorResponse); !ok {
+			retryErr.Add(err)
+			err = retryErr
+		}
 	}
 	return
 }
@@ -508,8 +525,19 @@ func checkURL(baseURL *url.URL) bool {
 	if baseURL == nil {
 		return false
 	}
+	if baseURL.Scheme == "" || baseURL.Hostname() == "" {
+		return false
+	}
 	host := baseURL.String()
 	if hostSuffix.MatchString(host) && !hostPrefix.MatchString(host) {
+		return false
+	}
+	return true
+}
+
+func CheckObjectKeySimplify(key string) bool {
+	res, err := filepath.Abs(key)
+	if res == "/" || err != nil {
 		return false
 	}
 	return true

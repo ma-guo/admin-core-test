@@ -9,5 +9,5 @@ type NoneRsp struct {
 }
 
 type SystemTestReq struct {
-	World string `json:"world" zpf_name:"world" zpf_reqd:"true"` //	hello world
+	World string `json:"world" zpf_name:"world" zpf_reqd:"true"` //	输入一个词	 示例: hello world
 }
