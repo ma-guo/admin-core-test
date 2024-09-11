@@ -1,3 +1,6 @@
+# 文档教程
+在稀土掘金开了[niuhe 插件](https://juejin.cn/column/7376620206338785314) 系列教程。如有问题, 亦可咨询 1057981162(QQ/微信)
+
 # 本 demo 说明
 本项目演示使用 vscode 插件 `niuhe` 接入项目 [admin-core](https://github.com/ma-guo/admin-core/) 例子。前端项目为 [vue3-element-admin](https://github.com/ma-guo/vue3-element-admin)
 ### 1. 定义 niuhe 文件
