@@ -1,4 +1,7 @@
 # 教程请查阅 [DOCS.md](./DOCS.md)
+交流群 QQ [971024252] [点击链接加入群聊【niuhe插件支持】：https://qm.qq.com/q/vTaMfRNwL]
+
+
 以下文档为插件首次运行时自动生成
 
 # mod
