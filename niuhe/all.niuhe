@@ -13,3 +13,4 @@ class SystemTestReq(Message):
 with services():
     GET('测试  api', '/api/system/test/', SystemTestReq, NoneRsp)
     PUT('测试  api', '/api/system/test/', NoneReq, NoneRsp)
+    GET('项目文档', '/api/system/docs/', NoneReq, NoneRsp)

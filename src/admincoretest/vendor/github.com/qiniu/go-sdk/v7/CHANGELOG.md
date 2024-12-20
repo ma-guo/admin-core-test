@@ -1,5 +1,46 @@
 # Changelog
 
+## 7.25.1
+
+* 修复
+  * QVS 录制合并接口
+
+## 7.25.0
+
+* 新增
+  * CDN API 支持计量数据类型
+
+## 7.24.0
+* 新增
+  * 支持工作流模版
+  * 在 [storage](github.com/qiniu/go-sdk/v7/storage) 包中支持上传加速
+* 优化
+  * 超时连接重试机制
+  * 域名解析请求机制
+  * 域名解析缓存过期机制
+
+## 7.23.0
+* 新增
+  * 支持上传加速
+  * 多媒体处理库 [media](github.com/qiniu/go-sdk/v7/media/apis) 包，提供多媒体处理接口
+  * IAM [iam](github.com/qiniu/go-sdk/v7/iam/apis) 包，提供权限管理系统接口
+  * 获取下载 URL 的实用方法
+  * 提供文件夹分享接口
+* 修复
+  * `downloader.DownloadDirectory` 下载根目录出错的 Bug
+
+## 7.22.0
+* 新增
+  * 新版存储客户端库 storagev2 包，包含
+    * 新的 [uploader](github.com/qiniu/go-sdk/v7/storagev2/uploader) 包设计，提供更好的对象上传接口
+    * 新的 [downloader](github.com/qiniu/go-sdk/v7/storagev2/downloader) 包设计，提供更好的对象下载接口
+    * 新的 [objects](github.com/qiniu/go-sdk/v7/storagev2/objects) 包设计，提供更好的对象管理接口
+  * 为 HTTP 客户端新增防劫持能力
+* 调整
+  * 查询区域主备域名
+* 修复
+  * Go SDK v7.21.1 可能出现崩溃的问题
+
 ## 7.21.1
 * 修复
   * 修复通过 ResumeUploaderV2 上传的文件无法正确设置 Content-Type 的问题

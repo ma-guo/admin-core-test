@@ -2,9 +2,11 @@ package clientv2
 
 import (
 	"context"
+	"io"
 	"math/rand"
 	"net"
 	"net/http"
+	"sync"
 	"time"
 
 	clientv1 "github.com/qiniu/go-sdk/v7/client"
@@ -16,7 +18,7 @@ import (
 )
 
 type (
-	contextKeyBufferResponse struct{}
+	bufferResponseContextKey struct{}
 
 	SimpleRetryConfig struct {
 		RetryMax      int                  // 最大重试次数
@@ -97,14 +99,20 @@ func (interceptor *simpleRetryInterceptor) Intercept(req *http.Request, handler 
 	interceptor.config.init()
 
 	hostname := req.URL.Hostname()
-	resolvedIPs := interceptor.resolve(req, hostname)
+	resolvedIPs := interceptor.resolve(req, hostname, false)
+	resolvedIPsMap := make(map[string]struct{}, len(resolvedIPs))
+	addIPsToMap(resolvedIPsMap, resolvedIPs)
 
 	// 可能会被重试多次
 	for i := 0; ; i++ {
-		req, chosenIPs = interceptor.choose(req, resolvedIPs, hostname)
 		// Clone 防止后面 Handler 处理对 req 有污染
 		reqBefore := cloneReq(req)
+		req, chosenIPs = interceptor.ensureChoose(req, hostname, resolvedIPs, resolvedIPsMap)
 		resp, err = interceptor.callHandler(req, &retrier.RetrierOptions{Attempts: i}, handler)
+
+		if err == nil && resp.StatusCode/100 >= 4 {
+			err = clientv1.ResponseError(resp)
+		}
 
 		retryDecision := interceptor.config.getRetryDecision(reqBefore, resp, err, i)
 		if retryDecision == retrier.DontRetry {
@@ -119,14 +127,41 @@ func (interceptor *simpleRetryInterceptor) Intercept(req *http.Request, handler 
 			break
 		}
 
+		if req.Body != nil && req.GetBody != nil {
+			if closer, ok := req.Body.(io.Closer); ok {
+				closer.Close()
+			}
+			if req.Body, err = req.GetBody(); err != nil {
+				return
+			}
+		}
+
 		if resp != nil && resp.Body != nil {
 			_ = internal_io.SinkAll(resp.Body)
 			resp.Body.Close()
 		}
 
-		interceptor.backoff(req, i)
+		interceptor.wait(req, i)
 	}
 	return resp, err
+}
+
+func (interceptor *simpleRetryInterceptor) ensureChoose(req *http.Request, hostname string, resolvedIPs []net.IP, resolvedIPsMap map[string]struct{}) (*http.Request, []net.IP) {
+	var chosenIPs []net.IP
+beforeChoose:
+	req, chosenIPs = interceptor.choose(req, resolvedIPs, hostname, true)
+	for len(chosenIPs) == 0 {
+		newResolvedIPs := interceptor.resolve(req, hostname, true)
+		if len(newResolvedIPs) > 0 && !isAllIPsInMap(resolvedIPsMap, newResolvedIPs) { // 但凡能拿到新的 IP 就尝试新的 IP
+			addIPsToMap(resolvedIPsMap, newResolvedIPs)
+			resolvedIPs = mergeIPs(resolvedIPs, newResolvedIPs)
+			goto beforeChoose
+		} else { // 如果拿不到新的 IP，只能从已有的 IP 集合里选择
+			req, chosenIPs = interceptor.choose(req, resolvedIPs, hostname, false)
+			break
+		}
+	}
+	return req, chosenIPs
 }
 
 func (interceptor *simpleRetryInterceptor) callHandler(req *http.Request, options *retrier.RetrierOptions, handler Handler) (resp *http.Response, err error) {
@@ -140,53 +175,88 @@ func (interceptor *simpleRetryInterceptor) callHandler(req *http.Request, option
 	return
 }
 
-func (interceptor *simpleRetryInterceptor) resolve(req *http.Request, hostname string) []net.IP {
+var (
+	defaultResolver     resolver.Resolver
+	defaultResolverOnce sync.Once
+)
+
+func (interceptor *simpleRetryInterceptor) resolver() resolver.Resolver {
+	var r resolver.Resolver
+	if r = interceptor.config.Resolver; r == nil {
+		defaultResolverOnce.Do(func() {
+			defaultResolver, _ = resolver.NewCacheResolver(nil, nil)
+		})
+		r = defaultResolver
+	}
+	return r
+}
+
+func (interceptor *simpleRetryInterceptor) resolve(req *http.Request, hostname string, bypassCache bool) []net.IP {
 	var (
+		ctx context.Context
 		ips []net.IP
 		err error
 	)
-	if resolver := interceptor.config.Resolver; resolver != nil {
+	if r := interceptor.resolver(); r != nil {
 		if interceptor.config.BeforeResolve != nil {
 			interceptor.config.BeforeResolve(req)
 		}
-		if ips, err = resolver.Resolve(req.Context(), hostname); err == nil {
+		ctx = req.Context()
+		if bypassCache {
+			ctx = resolver.WithByPassResolverCache(ctx)
+		}
+		if ips, err = r.Resolve(ctx, hostname); err == nil {
 			if interceptor.config.AfterResolve != nil {
 				interceptor.config.AfterResolve(req, ips)
 			}
-		} else if err != nil && interceptor.config.ResolveError != nil {
+		} else if interceptor.config.ResolveError != nil {
 			interceptor.config.ResolveError(req, err)
 		}
 	}
 	return ips
 }
 
-func (interceptor *simpleRetryInterceptor) choose(req *http.Request, ips []net.IP, hostname string) (*http.Request, []net.IP) {
+var (
+	defaultChooser     chooser.Chooser
+	defaultChooserOnce sync.Once
+)
+
+func (interceptor *simpleRetryInterceptor) chooser() chooser.Chooser {
+	var cs chooser.Chooser
+	if cs = interceptor.config.Chooser; cs == nil {
+		defaultChooserOnce.Do(func() {
+			defaultChooser = chooser.NewShuffleChooser(chooser.NewSmartIPChooser(nil))
+		})
+		cs = defaultChooser
+	}
+	return cs
+}
+
+func (interceptor *simpleRetryInterceptor) choose(req *http.Request, ips []net.IP, hostname string, failFast bool) (*http.Request, []net.IP) {
 	if len(ips) > 0 {
-		if cs := interceptor.config.Chooser; cs != nil {
-			ips = cs.Choose(req.Context(), ips, &chooser.ChooseOptions{Domain: hostname})
+		ips = interceptor.chooser().Choose(req.Context(), ips, &chooser.ChooseOptions{Domain: hostname, FailFast: failFast})
+		if len(ips) > 0 {
+			req = req.WithContext(clientv1.WithResolvedIPs(req.Context(), hostname, ips))
 		}
-		req = req.WithContext(clientv1.WithResolvedIPs(req.Context(), hostname, ips))
 	}
 	return req, ips
 }
 
 func (interceptor *simpleRetryInterceptor) feedbackGood(req *http.Request, hostname string, ips []net.IP) {
 	if len(ips) > 0 {
-		if cs := interceptor.config.Chooser; cs != nil {
-			cs.FeedbackGood(req.Context(), ips, &chooser.FeedbackOptions{Domain: hostname})
-		}
+		interceptor.resolver().FeedbackGood(req.Context(), hostname, ips)
+		interceptor.chooser().FeedbackGood(req.Context(), ips, &chooser.FeedbackOptions{Domain: hostname})
 	}
 }
 
 func (interceptor *simpleRetryInterceptor) feedbackBad(req *http.Request, hostname string, ips []net.IP) {
 	if len(ips) > 0 {
-		if cs := interceptor.config.Chooser; cs != nil {
-			cs.FeedbackBad(req.Context(), ips, &chooser.FeedbackOptions{Domain: hostname})
-		}
+		interceptor.resolver().FeedbackBad(req.Context(), hostname, ips)
+		interceptor.chooser().FeedbackBad(req.Context(), ips, &chooser.FeedbackOptions{Domain: hostname})
 	}
 }
 
-func (interceptor *simpleRetryInterceptor) backoff(req *http.Request, attempts int) {
+func (interceptor *simpleRetryInterceptor) wait(req *http.Request, attempts int) {
 	retryInterval := interceptor.config.getRetryInterval(req.Context(), attempts)
 	if interceptor.config.BeforeBackoff != nil {
 		interceptor.config.BeforeBackoff(req, &retrier.RetrierOptions{Attempts: attempts}, retryInterval)
@@ -210,4 +280,34 @@ func bufferResponse(resp *http.Response) error {
 
 func defaultRetryInterval() time.Duration {
 	return time.Duration(50+rand.Int()%50) * time.Millisecond
+}
+
+func addIPsToMap(m map[string]struct{}, ips []net.IP) {
+	for _, ip := range ips {
+		m[string(ip.To16())] = struct{}{}
+	}
+}
+
+func isAllIPsInMap(m map[string]struct{}, ips []net.IP) bool {
+	for _, ip := range ips {
+		if _, ok := m[string(ip.To16())]; !ok {
+			return false
+		}
+	}
+	return true
+}
+
+func mergeIPs(ips1, ips2 []net.IP) []net.IP {
+	newIPs := make([]net.IP, 0, len(ips1)+len(ips2))
+	newIPs = append(newIPs, ips1...)
+loop:
+	for _, ip2 := range ips2 {
+		for _, ip1 := range ips1 {
+			if ip1.Equal(ip2) {
+				continue loop
+			}
+		}
+		newIPs = append(newIPs, ip2)
+	}
+	return newIPs
 }

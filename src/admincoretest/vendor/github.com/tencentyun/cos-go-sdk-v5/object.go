@@ -118,10 +118,11 @@ func (s *ObjectService) GetObjectURL(name string) *url.URL {
 }
 
 type PresignedURLOptions struct {
-	Query      *url.Values  `xml:"-" url:"-" header:"-"`
-	Header     *http.Header `header:"-,omitempty" url:"-" xml:"-"`
-	SignMerged bool         `xml:"-" url:"-" header:"-"`
-	AuthTime   *AuthTime    `xml:"-" url:"-" header:"-"`
+	Query           *url.Values  `xml:"-" url:"-" header:"-"`
+	Header          *http.Header `header:"-,omitempty" url:"-" xml:"-"`
+	SignMerged      bool         `xml:"-" url:"-" header:"-"`
+	AuthTime        *AuthTime    `xml:"-" url:"-" header:"-"`
+	EncodeDelimiter bool         `xml:"-" url:"-" header:"-"`
 }
 
 // GetPresignedURL get the object presigned to down or upload file by url
@@ -161,7 +162,7 @@ func (s *ObjectService) GetPresignedURL(ctx context.Context, httpMethod, name, a
 			}
 		}
 	}
-	req, err := s.client.newRequest(ctx, sendOpt.baseURL, sendOpt.uri, sendOpt.method, sendOpt.body, sendOpt.optQuery, sendOpt.optHeader)
+	req, err := s.client.newRequest(ctx, sendOpt.baseURL, sendOpt.uri, sendOpt.method, sendOpt.body, sendOpt.optQuery, sendOpt.optHeader, false)
 	if err != nil {
 		return nil, err
 	}
@@ -242,7 +243,7 @@ func (s *ObjectService) GetPresignedURL2(ctx context.Context, httpMethod, name s
 		sendOpt.uri = fmt.Sprintf("%s%s%s", sendOpt.uri, mark, url.Values{"x-cos-security-token": []string{cred.SessionToken}}.Encode())
 	}
 
-	req, err := s.client.newRequest(ctx, sendOpt.baseURL, sendOpt.uri, sendOpt.method, sendOpt.body, sendOpt.optQuery, sendOpt.optHeader)
+	req, err := s.client.newRequest(ctx, sendOpt.baseURL, sendOpt.uri, sendOpt.method, sendOpt.body, sendOpt.optQuery, sendOpt.optHeader, false)
 	if err != nil {
 		return nil, err
 	}
@@ -282,7 +283,17 @@ func (s *ObjectService) GetPresignedURL3(ctx context.Context, httpMethod, name s
 	if name == "" {
 		return nil, fmt.Errorf("object key is empty.")
 	}
-	name = encodeURIComponent(name, []byte("/"))
+	var encodeDelimiter bool
+	if opt != nil {
+		if popt, ok := opt.(*PresignedURLOptions); ok {
+			encodeDelimiter = popt.EncodeDelimiter
+		}
+	}
+	if encodeDelimiter {
+		name = encodeURIComponent(name)
+	} else {
+		name = encodeURIComponent(name, []byte("/"))
+	}
 
 	cred := s.client.GetCredential()
 	if cred == nil {
@@ -318,7 +329,7 @@ func (s *ObjectService) GetPresignedURL3(ctx context.Context, httpMethod, name s
 		sendOpt.uri = fmt.Sprintf("%s%s%s", sendOpt.uri, mark, url.Values{"x-cos-security-token": []string{cred.SessionToken}}.Encode())
 	}
 
-	req, err := s.client.newRequest(ctx, sendOpt.baseURL, sendOpt.uri, sendOpt.method, sendOpt.body, sendOpt.optQuery, sendOpt.optHeader)
+	req, err := s.client.newRequest(ctx, sendOpt.baseURL, sendOpt.uri, sendOpt.method, sendOpt.body, sendOpt.optQuery, sendOpt.optHeader, false)
 	if err != nil {
 		return nil, err
 	}
@@ -371,7 +382,7 @@ func (s *ObjectService) GetSignature(ctx context.Context, httpMethod, name, ak, 
 			sendOpt.uri = fmt.Sprintf("%s?%s", sendOpt.uri, qs)
 		}
 	}
-	req, err := s.client.newRequest(ctx, sendOpt.baseURL, sendOpt.uri, sendOpt.method, sendOpt.body, sendOpt.optQuery, sendOpt.optHeader)
+	req, err := s.client.newRequest(ctx, sendOpt.baseURL, sendOpt.uri, sendOpt.method, sendOpt.body, sendOpt.optQuery, sendOpt.optHeader, false)
 	if err != nil {
 		return ""
 	}
@@ -771,7 +782,7 @@ type CASJobParameters struct {
 // ObjectRestoreOptions is the option of object restore
 type ObjectRestoreOptions struct {
 	XMLName       xml.Name          `xml:"RestoreRequest" header:"-" url:"-"`
-	Days          int               `xml:"Days" header:"-" url:"-"`
+	Days          int               `xml:"Days,omitempty" header:"-" url:"-"`
 	Tier          *CASJobParameters `xml:"CASJobParameters" header:"-" url:"-"`
 	XOptionHeader *http.Header      `xml:"-" header:",omitempty" url:"-"`
 }
@@ -1368,6 +1379,7 @@ func (s *ObjectService) Upload(ctx context.Context, name string, filepath string
 				partOpt.XCosSSECustomerKey = optini.XCosSSECustomerKey
 				partOpt.XCosSSECustomerKeyMD5 = optini.XCosSSECustomerKeyMD5
 				partOpt.XCosTrafficLimit = optini.XCosTrafficLimit
+				partOpt.XOptionHeader = optini.XOptionHeader
 			}
 			job := &Jobs{
 				Name:       name,
@@ -1474,6 +1486,37 @@ func SplitSizeIntoChunks(totalBytes int64, partSize int64) ([]Chunk, int, error)
 	return chunks, int(partNum), nil
 }
 
+func SplitSizeIntoChunksToDownload(totalBytes int64, partSize int64) ([]Chunk, int, error) {
+	var partNum int64
+	if partSize > 0 {
+		if partSize < 1024*1024 {
+			return nil, 0, errors.New("partSize>=1048576 is required")
+		}
+		partNum = totalBytes / partSize
+	} else {
+		partNum, partSize = DividePart(totalBytes, 16)
+	}
+
+	var chunks []Chunk
+	var chunk = Chunk{}
+	for i := int64(0); i < partNum; i++ {
+		chunk.Number = int(i + 1)
+		chunk.OffSet = i * partSize
+		chunk.Size = partSize
+		chunks = append(chunks, chunk)
+	}
+
+	if totalBytes%partSize > 0 {
+		chunk.Number = len(chunks) + 1
+		chunk.OffSet = int64(len(chunks)) * partSize
+		chunk.Size = totalBytes % partSize
+		chunks = append(chunks, chunk)
+		partNum++
+	}
+
+	return chunks, int(partNum), nil
+}
+
 func (s *ObjectService) checkDownloadedParts(opt *MultiDownloadCPInfo, chfile string, chunks []Chunk) (*MultiDownloadCPInfo, bool) {
 	var defaultRes MultiDownloadCPInfo
 	defaultRes = *opt
@@ -1550,7 +1593,7 @@ func (s *ObjectService) Download(ctx context.Context, name string, filepath stri
 	}
 
 	// 切分
-	chunks, partNum, err := SplitSizeIntoChunks(totalBytes, opt.PartSize*1024*1024)
+	chunks, partNum, err := SplitSizeIntoChunksToDownload(totalBytes, opt.PartSize*1024*1024)
 	if err != nil {
 		return resp, err
 	}
@@ -1909,11 +1952,15 @@ func (s *ObjectService) PutSymlink(ctx context.Context, name string, opt *Object
 	if opt == nil || opt.SymlinkTarget == "" {
 		return nil, errors.New("SymlinkTarget is empty")
 	}
+	copt := &ObjectPutSymlinkOptions{
+		SymlinkTarget: encodeURIComponent(opt.SymlinkTarget),
+		XOptionHeader: opt.XOptionHeader,
+	}
 	sendOpt := &sendOptions{
 		baseURL:   s.client.BaseURL.BucketURL,
 		uri:       "/" + encodeURIComponent(name) + "?symlink",
 		method:    http.MethodPut,
-		optHeader: opt,
+		optHeader: copt,
 	}
 	resp, err := s.client.doRetry(ctx, sendOpt)
 	return resp, err

@@ -17,12 +17,14 @@ import (
 	"sync"
 	"time"
 
+	"github.com/qiniu/go-sdk/v7/auth"
 	"github.com/qiniu/go-sdk/v7/internal/cache"
 	"github.com/qiniu/go-sdk/v7/internal/clientv2"
 	"github.com/qiniu/go-sdk/v7/internal/hostprovider"
 	"github.com/qiniu/go-sdk/v7/internal/log"
 	"github.com/qiniu/go-sdk/v7/storagev2/backoff"
 	"github.com/qiniu/go-sdk/v7/storagev2/chooser"
+	"github.com/qiniu/go-sdk/v7/storagev2/credentials"
 	"github.com/qiniu/go-sdk/v7/storagev2/resolver"
 	"github.com/qiniu/go-sdk/v7/storagev2/retrier"
 )
@@ -34,16 +36,20 @@ type (
 	}
 
 	bucketRegionsQuery struct {
-		bucketHosts Endpoints
-		cache       *cache.Cache
-		client      clientv2.Client
-		useHttps    bool
+		bucketHosts         Endpoints
+		cache               *cache.Cache
+		client              clientv2.Client
+		useHttps            bool
+		accelerateUploading bool
 	}
 
-	// BucketRegionsQuery 空间区域查询器选项
+	// BucketRegionsQueryOptions 空间区域查询器选项
 	BucketRegionsQueryOptions struct {
 		// 使用 HTTP 协议
 		UseInsecureProtocol bool
+
+		// 是否加速上传
+		AccelerateUploading bool
 
 		// 压缩周期（默认：60s）
 		CompactInterval time.Duration
@@ -95,20 +101,23 @@ type (
 	}
 
 	bucketRegionsProvider struct {
-		accessKey  string
-		bucketName string
-		cacheKey   string
-		query      *bucketRegionsQuery
+		accessKey           string
+		bucketName          string
+		cacheKey            string
+		query               *bucketRegionsQuery
+		accelerateUploading bool
 	}
 
 	v4QueryCacheValue struct {
-		Regions   []*Region `json:"regions"`
-		ExpiredAt time.Time `json:"expired_at"`
+		Regions      []*Region `json:"regions"`
+		RefreshAfter time.Time `json:"refresh_after"`
+		ExpiredAt    time.Time `json:"expired_at"`
 	}
 
 	v4QueryServiceHosts struct {
-		Domains []string `json:"domains"`
-		Old     []string `json:"old"`
+		Domains    []string `json:"domains"`
+		Old        []string `json:"old"`
+		AccDomains []string `json:"acc_domains"`
 	}
 
 	v4QueryRegion struct {
@@ -128,13 +137,11 @@ type (
 	}
 )
 
-const cacheFileName = "query_v4_01.cache.json"
+const bucketRegionsQueryCacheFileName = "query_v4_01.cache.json"
 
 var (
 	persistentCaches     map[uint64]*cache.Cache
 	persistentCachesLock sync.Mutex
-	defaultResolver      = resolver.NewDefaultResolver()
-	defaultChooser       = chooser.NewShuffleChooser(chooser.NewSmartIPChooser(nil))
 )
 
 // NewBucketRegionsQuery 创建空间区域查询器
@@ -142,45 +149,40 @@ func NewBucketRegionsQuery(bucketHosts Endpoints, opts *BucketRegionsQueryOption
 	if opts == nil {
 		opts = &BucketRegionsQueryOptions{}
 	}
-	if opts.RetryMax <= 0 {
-		opts.RetryMax = 2
+	retryMax := opts.RetryMax
+	if retryMax <= 0 {
+		retryMax = 2
 	}
-	if opts.CompactInterval == time.Duration(0) {
-		opts.CompactInterval = time.Minute
+	compactInterval := opts.CompactInterval
+	if compactInterval == time.Duration(0) {
+		compactInterval = time.Minute
 	}
-	if opts.PersistentFilePath == "" {
-		opts.PersistentFilePath = filepath.Join(os.TempDir(), "qiniu-golang-sdk", cacheFileName)
+	persistentFilePath := opts.PersistentFilePath
+	if persistentFilePath == "" {
+		persistentFilePath = filepath.Join(os.TempDir(), "qiniu-golang-sdk", bucketRegionsQueryCacheFileName)
 	}
-	if opts.PersistentDuration == time.Duration(0) {
-		opts.PersistentDuration = time.Minute
+	persistentDuration := opts.PersistentDuration
+	if persistentDuration == time.Duration(0) {
+		persistentDuration = time.Minute
 	}
 
-	persistentCache, err := getPersistentCache(opts)
+	persistentCache, err := getPersistentCache(persistentFilePath, compactInterval, persistentDuration)
 	if err != nil {
 		return nil, err
 	}
 
-	r := opts.Resolver
-	cs := opts.Chooser
-	bf := opts.Backoff
-	if r == nil {
-		r = defaultResolver
-	}
-	if cs == nil {
-		cs = defaultChooser
-	}
 	return &bucketRegionsQuery{
 		bucketHosts: bucketHosts,
 		cache:       persistentCache,
 		client: makeBucketQueryClient(
-			opts.Client,
+			opts.Client, nil,
 			bucketHosts,
 			!opts.UseInsecureProtocol,
-			opts.RetryMax,
+			retryMax,
 			opts.HostFreezeDuration,
-			r,
-			cs,
-			bf,
+			opts.Resolver,
+			opts.Chooser,
+			opts.Backoff,
 			opts.BeforeResolve,
 			opts.AfterResolve,
 			opts.ResolveError,
@@ -188,19 +190,21 @@ func NewBucketRegionsQuery(bucketHosts Endpoints, opts *BucketRegionsQueryOption
 			opts.AfterBackoff,
 			opts.BeforeRequest,
 			opts.AfterResponse,
+			nil, nil, nil,
 		),
-		useHttps: !opts.UseInsecureProtocol,
+		useHttps:            !opts.UseInsecureProtocol,
+		accelerateUploading: opts.AccelerateUploading,
 	}, nil
 }
 
-func getPersistentCache(opts *BucketRegionsQueryOptions) (*cache.Cache, error) {
+func getPersistentCache(persistentFilePath string, compactInterval, persistentDuration time.Duration) (*cache.Cache, error) {
 	var (
 		persistentCache *cache.Cache
 		ok              bool
 		err             error
 	)
 
-	crc64Value := calcPersistentCacheCrc64(opts)
+	crc64Value := calcPersistentCacheCrc64(persistentFilePath, compactInterval, persistentDuration)
 	persistentCachesLock.Lock()
 	defer persistentCachesLock.Unlock()
 
@@ -210,9 +214,9 @@ func getPersistentCache(opts *BucketRegionsQueryOptions) (*cache.Cache, error) {
 	if persistentCache, ok = persistentCaches[crc64Value]; !ok {
 		persistentCache, err = cache.NewPersistentCache(
 			reflect.TypeOf(&v4QueryCacheValue{}),
-			opts.PersistentFilePath,
-			opts.CompactInterval,
-			opts.PersistentDuration,
+			persistentFilePath,
+			compactInterval,
+			persistentDuration,
 			func(err error) {
 				log.Warn(fmt.Sprintf("BucketRegionsQuery persist error: %s", err))
 			})
@@ -227,10 +231,11 @@ func getPersistentCache(opts *BucketRegionsQueryOptions) (*cache.Cache, error) {
 // Query 查询空间区域，返回 region.RegionsProvider
 func (query *bucketRegionsQuery) Query(accessKey, bucketName string) RegionsProvider {
 	return &bucketRegionsProvider{
-		accessKey:  accessKey,
-		bucketName: bucketName,
-		query:      query,
-		cacheKey:   makeRegionCacheKey(accessKey, bucketName, query.bucketHosts),
+		accessKey:           accessKey,
+		bucketName:          bucketName,
+		query:               query,
+		cacheKey:            makeRegionCacheKey(accessKey, bucketName, query.accelerateUploading, query.bucketHosts),
+		accelerateUploading: query.accelerateUploading,
 	}
 }
 
@@ -240,13 +245,14 @@ func (provider *bucketRegionsProvider) GetRegions(ctx context.Context) ([]*Regio
 		var ret v4QueryResponse
 		url := fmt.Sprintf("%s/v4/query?ak=%s&bucket=%s", provider.query.bucketHosts.firstUrl(provider.query.useHttps), provider.accessKey, provider.bucketName)
 		if err = clientv2.DoAndDecodeJsonResponse(provider.query.client, clientv2.RequestParams{
-			Context: ctx,
-			Method:  clientv2.RequestMethodGet,
-			Url:     url,
+			Context:        ctx,
+			Method:         clientv2.RequestMethodGet,
+			Url:            url,
+			BufferResponse: true,
 		}, &ret); err != nil {
 			return nil, err
 		}
-		return ret.toCacheValue(), nil
+		return ret.toCacheValue(provider.accelerateUploading), nil
 	})
 	if status == cache.NoResultGot {
 		return nil, err
@@ -273,25 +279,31 @@ func (left *v4QueryCacheValue) IsValid() bool {
 	return time.Now().Before(left.ExpiredAt)
 }
 
-func (response *v4QueryResponse) toCacheValue() *v4QueryCacheValue {
+func (left *v4QueryCacheValue) ShouldRefresh() bool {
+	return time.Now().After(left.RefreshAfter)
+}
+
+func (response *v4QueryResponse) toCacheValue(accelerateUploading bool) *v4QueryCacheValue {
 	var (
 		minTtl  = int64(math.MaxInt64)
 		regions = make([]*Region, 0, len(response.Hosts))
 	)
 	for _, host := range response.Hosts {
-		regions = append(regions, host.toCacheValue())
+		regions = append(regions, host.toCacheValue(accelerateUploading))
 		if host.Ttl < minTtl {
 			minTtl = host.Ttl
 		}
 	}
+	now := time.Now()
 	return &v4QueryCacheValue{
-		Regions:   regions,
-		ExpiredAt: time.Now().Add(time.Duration(minTtl) * time.Second),
+		Regions:      regions,
+		RefreshAfter: now.Add(time.Duration(minTtl) * time.Second / 2),
+		ExpiredAt:    now.Add(time.Duration(minTtl) * time.Second),
 	}
 }
 
-func (response *v4QueryRegion) toCacheValue() *Region {
-	return &Region{
+func (response *v4QueryRegion) toCacheValue(accelerateUploading bool) *Region {
+	region := Region{
 		RegionID: response.RegionId,
 		Up:       response.Up.toCacheValue(),
 		Io:       response.Io.toCacheValue(),
@@ -301,21 +313,31 @@ func (response *v4QueryRegion) toCacheValue() *Region {
 		Api:      response.Api.toCacheValue(),
 		Bucket:   response.Uc.toCacheValue(),
 	}
+	if !accelerateUploading {
+		region.Up.Accelerated = nil
+	}
+
+	return &region
 }
 
 func (response *v4QueryServiceHosts) toCacheValue() Endpoints {
 	return Endpoints{
+		Accelerated: response.AccDomains,
 		Preferred:   response.Domains,
 		Alternative: response.Old,
 	}
 }
 
-func makeRegionCacheKey(accessKey, bucketName string, bucketHosts Endpoints) string {
-	return fmt.Sprintf("%s:%s:%s", accessKey, bucketName, makeBucketHostsCacheKey(bucketHosts))
+func makeRegionCacheKey(accessKey, bucketName string, accelerateUploading bool, bucketHosts Endpoints) string {
+	enableAcceleration := uint8(0)
+	if accelerateUploading {
+		enableAcceleration = 1
+	}
+	return fmt.Sprintf("%s:%s:%d:%s", accessKey, bucketName, enableAcceleration, makeBucketHostsCacheKey(bucketHosts))
 }
 
 func makeBucketHostsCacheKey(serviceHosts Endpoints) string {
-	return fmt.Sprintf("%s:%s", makeHostsCacheKey(serviceHosts.Preferred), makeHostsCacheKey(serviceHosts.Alternative))
+	return fmt.Sprintf("%s:%s:%s", makeHostsCacheKey(serviceHosts.Preferred), makeHostsCacheKey(serviceHosts.Alternative), makeHostsCacheKey(serviceHosts.Accelerated))
 }
 
 func makeHostsCacheKey(hosts []string) string {
@@ -326,6 +348,7 @@ func makeHostsCacheKey(hosts []string) string {
 
 func makeBucketQueryClient(
 	client clientv2.Client,
+	credentials credentials.CredentialsProvider,
 	bucketHosts Endpoints,
 	useHttps bool,
 	retryMax int,
@@ -340,10 +363,13 @@ func makeBucketQueryClient(
 	afterBackoff func(*http.Request, *retrier.RetrierOptions, time.Duration),
 	beforeRequest func(*http.Request, *retrier.RetrierOptions),
 	afterResponse func(*http.Response, *retrier.RetrierOptions, error),
+	beforeSign, afterSign func(*http.Request),
+	signError func(*http.Request, error),
 ) clientv2.Client {
 	is := []clientv2.Interceptor{
+		clientv2.NewAntiHijackingInterceptor(),
 		clientv2.NewHostsRetryInterceptor(clientv2.HostsRetryConfig{
-			RetryMax:           len(bucketHosts.Preferred) + len(bucketHosts.Alternative),
+			RetryMax:           bucketHosts.HostsLength(),
 			HostFreezeDuration: hostFreezeDuration,
 			HostProvider:       hostprovider.NewWithHosts(bucketHosts.allUrls(useHttps)),
 		}),
@@ -362,18 +388,23 @@ func makeBucketQueryClient(
 		}),
 		clientv2.NewBufferResponseInterceptor(),
 	}
+	if credentials != nil {
+		is = append(is, clientv2.NewAuthInterceptor(clientv2.AuthConfig{
+			Credentials: credentials,
+			TokenType:   auth.TokenQiniu,
+			BeforeSign:  beforeSign,
+			AfterSign:   afterSign,
+			SignError:   signError,
+		}))
+	}
 	return clientv2.NewClient(client, is...)
 }
 
-func (opts *BucketRegionsQueryOptions) toBytes() []byte {
+func calcPersistentCacheCrc64(persistentFilePath string, compactInterval, persistentDuration time.Duration) uint64 {
 	bytes := make([]byte, 0, 1024)
-	bytes = strconv.AppendInt(bytes, int64(opts.CompactInterval), 36)
-	bytes = append(bytes, []byte(opts.PersistentFilePath)...)
+	bytes = strconv.AppendInt(bytes, int64(compactInterval), 36)
+	bytes = append(bytes, []byte(persistentFilePath)...)
 	bytes = append(bytes, byte(0))
-	bytes = strconv.AppendInt(bytes, int64(opts.PersistentDuration), 36)
-	return bytes
-}
-
-func calcPersistentCacheCrc64(opts *BucketRegionsQueryOptions) uint64 {
-	return crc64.Checksum(opts.toBytes(), crc64.MakeTable(crc64.ISO))
+	bytes = strconv.AppendInt(bytes, int64(persistentDuration), 36)
+	return crc64.Checksum(bytes, crc64.MakeTable(crc64.ISO))
 }

@@ -783,16 +783,17 @@ type MediaProcessJobOperation struct {
 
 // CreatePicJobsOptions TODO
 type CreatePicJobsOptions struct {
-	XMLName          xml.Name                      `xml:"Request"`
-	Tag              string                        `xml:"Tag,omitempty"`
-	Input            *JobInput                     `xml:"Input,omitempty"`
-	Operation        *PicProcessJobOperation       `xml:"Operation,omitempty"`
-	QueueId          string                        `xml:"QueueId,omitempty"`
-	CallBack         string                        `xml:"CallBack,omitempty"`
-	QueueType        string                        `xml:"QueueType,omitempty"`
-	CallBackFormat   string                        `xml:"CallBackFormat,omitempty"`
-	CallBackType     string                        `xml:"CallBackType,omitempty"`
-	CallBackMqConfig *NotifyConfigCallBackMqConfig `xml:"CallBackMqConfig,omitempty"`
+	XMLName             xml.Name                      `xml:"Request"`
+	Tag                 string                        `xml:"Tag,omitempty"`
+	Input               *JobInput                     `xml:"Input,omitempty"`
+	Operation           *PicProcessJobOperation       `xml:"Operation,omitempty"`
+	QueueId             string                        `xml:"QueueId,omitempty"`
+	CallBack            string                        `xml:"CallBack,omitempty"`
+	QueueType           string                        `xml:"QueueType,omitempty"`
+	CallBackFormat      string                        `xml:"CallBackFormat,omitempty"`
+	CallBackType        string                        `xml:"CallBackType,omitempty"`
+	CallBackMqConfig    *NotifyConfigCallBackMqConfig `xml:"CallBackMqConfig,omitempty"`
+	CallBackKafkaConfig *KafkaConfig                  `xml:"CallBackKafkaConfig,omitempty"`
 }
 
 // CreateAIJobsOptions TODO
@@ -800,16 +801,17 @@ type CreateAIJobsOptions CreateMediaJobsOptions
 
 // CreateMediaJobsOptions TODO
 type CreateMediaJobsOptions struct {
-	XMLName          xml.Name                      `xml:"Request"`
-	Tag              string                        `xml:"Tag,omitempty"`
-	Input            *JobInput                     `xml:"Input,omitempty"`
-	Operation        *MediaProcessJobOperation     `xml:"Operation,omitempty"`
-	QueueId          string                        `xml:"QueueId,omitempty"`
-	QueueType        string                        `xml:"QueueType,omitempty"`
-	CallBackFormat   string                        `xml:"CallBackFormat,omitempty"`
-	CallBackType     string                        `xml:"CallBackType,omitempty"`
-	CallBack         string                        `xml:"CallBack,omitempty"`
-	CallBackMqConfig *NotifyConfigCallBackMqConfig `xml:"CallBackMqConfig,omitempty"`
+	XMLName             xml.Name                      `xml:"Request"`
+	Tag                 string                        `xml:"Tag,omitempty"`
+	Input               *JobInput                     `xml:"Input,omitempty"`
+	Operation           *MediaProcessJobOperation     `xml:"Operation,omitempty"`
+	QueueId             string                        `xml:"QueueId,omitempty"`
+	QueueType           string                        `xml:"QueueType,omitempty"`
+	CallBackFormat      string                        `xml:"CallBackFormat,omitempty"`
+	CallBackType        string                        `xml:"CallBackType,omitempty"`
+	CallBack            string                        `xml:"CallBack,omitempty"`
+	CallBackMqConfig    *NotifyConfigCallBackMqConfig `xml:"CallBackMqConfig,omitempty"`
+	CallBackKafkaConfig *KafkaConfig                  `xml:"CallBackKafkaConfig,omitempty"`
 }
 
 // NotifyConfigCallBackMqConfig TODO
@@ -856,16 +858,17 @@ type CreateMediaJobsResult struct {
 
 // CreateMultiMediaJobsOptions TODO
 type CreateMultiMediaJobsOptions struct {
-	XMLName          xml.Name                      `xml:"Request"`
-	Tag              string                        `xml:"Tag,omitempty"`
-	Input            *JobInput                     `xml:"Input,omitempty"`
-	Operation        []MediaProcessJobOperation    `xml:"Operation,omitempty"`
-	QueueId          string                        `xml:"QueueId,omitempty"`
-	QueueType        string                        `xml:"QueueType,omitempty"`
-	CallBackFormat   string                        `xml:"CallBackFormat,omitempty"`
-	CallBackType     string                        `xml:"CallBackType,omitempty"`
-	CallBack         string                        `xml:"CallBack,omitempty"`
-	CallBackMqConfig *NotifyConfigCallBackMqConfig `xml:"CallBackMqConfig,omitempty"`
+	XMLName             xml.Name                      `xml:"Request"`
+	Tag                 string                        `xml:"Tag,omitempty"`
+	Input               *JobInput                     `xml:"Input,omitempty"`
+	Operation           []MediaProcessJobOperation    `xml:"Operation,omitempty"`
+	QueueId             string                        `xml:"QueueId,omitempty"`
+	QueueType           string                        `xml:"QueueType,omitempty"`
+	CallBackFormat      string                        `xml:"CallBackFormat,omitempty"`
+	CallBackType        string                        `xml:"CallBackType,omitempty"`
+	CallBack            string                        `xml:"CallBack,omitempty"`
+	CallBackMqConfig    *NotifyConfigCallBackMqConfig `xml:"CallBackMqConfig,omitempty"`
+	CallBackKafkaConfig *KafkaConfig                  `xml:"CallBackKafkaConfig,omitempty"`
 }
 
 // CreateMultiMediaJobsResult TODO
@@ -1144,14 +1147,21 @@ type MediaProcessQueue struct {
 
 // MediaProcessQueueNotifyConfig TODO
 type MediaProcessQueueNotifyConfig struct {
-	Url          string `xml:"Url,omitempty"`
-	State        string `xml:"State,omitempty"`
-	Type         string `xml:"Type,omitempty"`
-	Event        string `xml:"Event,omitempty"`
-	ResultFormat string `xml:"ResultFormat,omitempty"`
-	MqMode       string `xml:"MqMode,omitempty"`
-	MqRegion     string `xml:"MqRegion,omitempty"`
-	MqName       string `xml:"MqName,omitempty"`
+	Url          string       `xml:"Url,omitempty"`
+	State        string       `xml:"State,omitempty"`
+	Type         string       `xml:"Type,omitempty"`
+	Event        string       `xml:"Event,omitempty"`
+	ResultFormat string       `xml:"ResultFormat,omitempty"`
+	MqMode       string       `xml:"MqMode,omitempty"`
+	MqRegion     string       `xml:"MqRegion,omitempty"`
+	MqName       string       `xml:"MqName,omitempty"`
+	KafkaConfig  *KafkaConfig `xml:"KafkaConfig,omitempty"`
+}
+
+type KafkaConfig struct {
+	Region     string `xml:"Region,omitempty"`
+	InstanceId string `xml:"InstanceId,omitempty"`
+	Topic      string `xml:"Topic,omitempty"`
 }
 
 // DescribeMediaProcessQueues TODO
@@ -1438,10 +1448,18 @@ type GetMediaInfoResult struct {
 // 媒体信息接口 https://cloud.tencent.com/document/product/436/55672
 func (s *CIService) GetMediaInfo(ctx context.Context, name string, opt *ObjectGetOptions, id ...string) (*GetMediaInfoResult, *Response, error) {
 	var u string
+
+	// 兼容 name 以 / 开头的情况
+	if strings.HasPrefix(name, "/") {
+		name = encodeURIComponent("/") + encodeURIComponent(name[1:], []byte{'/'})
+	} else {
+		name = encodeURIComponent(name, []byte{'/'})
+	}
+
 	if len(id) == 1 {
-		u = fmt.Sprintf("/%s?versionId=%s&ci-process=videoinfo", encodeURIComponent(name, []byte{'/'}), id[0])
+		u = fmt.Sprintf("/%s?versionId=%s&ci-process=videoinfo", name, id[0])
 	} else if len(id) == 0 {
-		u = fmt.Sprintf("/%s?ci-process=videoinfo", encodeURIComponent(name, []byte{'/'}))
+		u = fmt.Sprintf("/%s?ci-process=videoinfo", name)
 	} else {
 		return nil, nil, fmt.Errorf("wrong params")
 	}
@@ -1804,10 +1822,12 @@ func (s *CIService) DescribeWorkflowExecutions(ctx context.Context, opt *Describ
 
 // NotifyConfig TODO
 type NotifyConfig struct {
-	URL          string `xml:"Url,omitempty"`
-	Event        string `xml:"Event,omitempty"`
-	Type         string `xml:"Type,omitempty"`
-	ResultFormat string `xml:"ResultFormat,omitempty"`
+	URL          string       `xml:"Url,omitempty"`
+	Event        string       `xml:"Event,omitempty"`
+	Type         string       `xml:"Type,omitempty"`
+	ResultFormat string       `xml:"ResultFormat,omitempty"`
+	State        string       `xml:"State,omitempty"`
+	KafkaConfig  *KafkaConfig `xml:"KafkaConfig,omitempty" json:"KafkaConfig,omitempty"`
 }
 
 // ExtFilter TODO
@@ -2127,16 +2147,17 @@ type ASRJobOperation struct {
 
 // CreateASRJobsOptions TODO
 type CreateASRJobsOptions struct {
-	XMLName          xml.Name                      `xml:"Request"`
-	Tag              string                        `xml:"Tag,omitempty"`
-	Input            *JobInput                     `xml:"Input,omitempty"`
-	Operation        *ASRJobOperation              `xml:"Operation,omitempty"`
-	QueueId          string                        `xml:"QueueId,omitempty"`
-	CallBack         string                        `xml:"CallBack,omitempty"`
-	QueueType        string                        `xml:"QueueType,omitempty"`
-	CallBackFormat   string                        `xml:"CallBackFormat,omitempty"`
-	CallBackType     string                        `xml:"CallBackType,omitempty"`
-	CallBackMqConfig *NotifyConfigCallBackMqConfig `xml:"CallBackMqConfig,omitempty"`
+	XMLName             xml.Name                      `xml:"Request"`
+	Tag                 string                        `xml:"Tag,omitempty"`
+	Input               *JobInput                     `xml:"Input,omitempty"`
+	Operation           *ASRJobOperation              `xml:"Operation,omitempty"`
+	QueueId             string                        `xml:"QueueId,omitempty"`
+	CallBack            string                        `xml:"CallBack,omitempty"`
+	QueueType           string                        `xml:"QueueType,omitempty"`
+	CallBackFormat      string                        `xml:"CallBackFormat,omitempty"`
+	CallBackType        string                        `xml:"CallBackType,omitempty"`
+	CallBackMqConfig    *NotifyConfigCallBackMqConfig `xml:"CallBackMqConfig,omitempty"`
+	CallBackKafkaConfig *KafkaConfig                  `xml:"CallBackKafkaConfig,omitempty"`
 }
 
 // ASRJobDetail TODO
@@ -2436,18 +2457,41 @@ type CreateVideoTargetRecTemplateOptions struct {
 	VideoTargetRec *VideoTargetRec `xml:"VideoTargetRec,omitempty" json:"VideoTargetRec,omitempty"`
 }
 
+// VTRTranscode TODO
+type VTRTranscode struct {
+	Container *Container `xml:"Container,omitempty"`
+	Video     *VTRVideo  `xml:"Video,omitempty"`
+}
+
+// VTRVideo TODO
+type VTRVideo struct {
+	Codec   string `xml:"Codec"`
+	Bitrate string `xml:"Bitrate,omitempty"`
+	Crf     string `xml:"Crf,omitempty"`
+	Width   string `xml:"Width,omitempty"`
+	Height  string `xml:"Height,omitempty"`
+	Fps     string `xml:"Fps,omitempty"`
+}
+
 // VideoTargetRec TODO
 type VideoTargetRec struct {
-	Body string `xml:"Body,omitempty"`
-	Pet  string `xml:"Pet,omitempty"`
-	Car  string `xml:"Car,omitempty"`
+	Body        string        `xml:"Body,omitempty"`
+	Pet         string        `xml:"Pet,omitempty"`
+	Car         string        `xml:"Car,omitempty"`
+	Face        string        `xml:"Face,omitempty"`
+	Plate       string        `xml:"Plate,omitempty"`
+	ProcessType string        `xml:"ProcessType,omitempty"`
+	TransTpl    *VTRTranscode `xml:"TransTpl,omitempty"`
 }
 
 // VideoTargetRecResult TODO
 type VideoTargetRecResult struct {
-	BodyRecognition []*BodyRecognition `xml:"BodyRecognition,omitempty"`
-	PetRecognition  []*PetRecognition  `xml:"PetRecognition,omitempty"`
-	CarRecognition  []*CarRecognition  `xml:"CarRecognition,omitempty"`
+	BodyRecognition          []*BodyRecognition          `xml:"BodyRecognition,omitempty"`
+	PetRecognition           []*PetRecognition           `xml:"PetRecognition,omitempty"`
+	CarRecognition           []*CarRecognition           `xml:"CarRecognition,omitempty"`
+	FaceRecognition          []*FaceRecognition          `xml:"FaceRecognition,omitempty"`
+	LicenseRecognitionResult []*LicenseRecognitionResult `xml:"LicenseRecognitionResult,omitempty"`
+	Sensitive                string                      `xml:"Sensitive,omitempty"`
 }
 
 // BodyRecognition TODO
@@ -2469,6 +2513,20 @@ type CarRecognition struct {
 	Time    string                `xml:"Time,omitempty"`
 	Url     string                `xml:"Url,omitempty"`
 	CarInfo []*VideoTargetRecInfo `xml:"CarInfo,omitempty"`
+}
+
+// FaceRecognition TODO
+type FaceRecognition struct {
+	Time     string                `xml:"Time,omitempty"`
+	Url      string                `xml:"Url,omitempty"`
+	FaceInfo []*VideoTargetRecInfo `xml:"FaceInfo,omitempty"`
+}
+
+// LicenseRecognitionResult TODO
+type LicenseRecognitionResult struct {
+	Time      string                `xml:"Time,omitempty"`
+	Url       string                `xml:"Url,omitempty"`
+	PlateInfo []*VideoTargetRecInfo `xml:"PlateInfo,omitempty"`
 }
 
 // BodyInfo TODO
@@ -4080,16 +4138,17 @@ type GeneratePlayListJobOperation struct {
 }
 
 type CreateGeneratePlayListJobOptions struct {
-	XMLName          xml.Name                      `xml:"Request"`
-	Tag              string                        `xml:"Tag,omitempty"`
-	Input            *JobInput                     `xml:"Input,omitempty"`
-	Operation        *GeneratePlayListJobOperation `xml:"Operation,omitempty"`
-	QueueId          string                        `xml:"QueueId,omitempty"`
-	QueueType        string                        `xml:"QueueType,omitempty"`
-	CallBackFormat   string                        `xml:"CallBackFormat,omitempty"`
-	CallBackType     string                        `xml:"CallBackType,omitempty"`
-	CallBack         string                        `xml:"CallBack,omitempty"`
-	CallBackMqConfig *NotifyConfigCallBackMqConfig `xml:"CallBackMqConfig,omitempty"`
+	XMLName             xml.Name                      `xml:"Request"`
+	Tag                 string                        `xml:"Tag,omitempty"`
+	Input               *JobInput                     `xml:"Input,omitempty"`
+	Operation           *GeneratePlayListJobOperation `xml:"Operation,omitempty"`
+	QueueId             string                        `xml:"QueueId,omitempty"`
+	QueueType           string                        `xml:"QueueType,omitempty"`
+	CallBackFormat      string                        `xml:"CallBackFormat,omitempty"`
+	CallBackType        string                        `xml:"CallBackType,omitempty"`
+	CallBack            string                        `xml:"CallBack,omitempty"`
+	CallBackMqConfig    *NotifyConfigCallBackMqConfig `xml:"CallBackMqConfig,omitempty"`
+	CallBackKafkaConfig *KafkaConfig                  `xml:"CallBackKafkaConfig,omitempty"`
 }
 
 func (s *CIService) CreateGeneratePlayListJob(ctx context.Context, opt *CreateGeneratePlayListJobOptions) (*CreateJobsResult, *Response, error) {
@@ -4100,6 +4159,171 @@ func (s *CIService) CreateGeneratePlayListJob(ctx context.Context, opt *CreateGe
 		method:  http.MethodPost,
 		body:    opt,
 		result:  &res,
+	}
+	resp, err := s.client.send(ctx, &sendOpt)
+	return &res, resp, err
+}
+
+// CreateMultiGeneratePlayListJobsOptions TODO
+type CreateMultiGeneratePlayListJobsOptions struct {
+	XMLName             xml.Name                       `xml:"Request"`
+	Tag                 string                         `xml:"Tag,omitempty"`
+	Input               *JobInput                      `xml:"Input,omitempty"`
+	Operation           []GeneratePlayListJobOperation `xml:"Operation,omitempty"`
+	QueueId             string                         `xml:"QueueId,omitempty"`
+	QueueType           string                         `xml:"QueueType,omitempty"`
+	CallBackFormat      string                         `xml:"CallBackFormat,omitempty"`
+	CallBackType        string                         `xml:"CallBackType,omitempty"`
+	CallBack            string                         `xml:"CallBack,omitempty"`
+	CallBackMqConfig    *NotifyConfigCallBackMqConfig  `xml:"CallBackMqConfig,omitempty"`
+	CallBackKafkaConfig *KafkaConfig                   `xml:"CallBackKafkaConfig,omitempty"`
+}
+
+// CreateMultiGeneratePlayListJobs TODO
+func (s *CIService) CreateMultiGeneratePlayListJobs(ctx context.Context, opt *CreateMultiGeneratePlayListJobsOptions) (*CreateMultiMediaJobsResult, *Response, error) {
+	var res CreateMultiMediaJobsResult
+	sendOpt := sendOptions{
+		baseURL: s.client.BaseURL.CIURL,
+		uri:     "/jobs",
+		method:  http.MethodPost,
+		body:    opt,
+		result:  &res,
+	}
+	resp, err := s.client.send(ctx, &sendOpt)
+	return &res, resp, err
+}
+
+type VocabularyWeight struct {
+	Vocabulary string `xml:"Vocabulary,omitempty"`
+	Weight     int    `xml:"Weight,omitempty"`
+}
+
+// CreateAsrVocabularyTableOptions TODO
+type CreateAsrVocabularyTableOptions struct {
+	XMLName             xml.Name           `xml:"Request"`
+	TableName           string             `xml:"TableName,omitempty"`
+	TableDescription    string             `xml:"TableDescription,omitempty"`
+	VocabularyWeights   []VocabularyWeight `xml:"VocabularyWeights,omitempty"`
+	VocabularyWeightStr string             `xml:"VocabularyWeightStr,omitempty"`
+}
+
+// CreateAsrVocabularyTableResult TODO
+type CreateAsrVocabularyTableResult struct {
+	XMLName   xml.Name `xml:"Response"`
+	Code      string   `xml:"Code,omitempty"`
+	Message   string   `xml:"Message,omitempty"`
+	TableId   string   `xml:"TableId,omitempty"`
+	RequestId string   `xml:"RequestId,omitempty"`
+}
+
+func (s *CIService) CreateAsrVocabularyTable(ctx context.Context, opt *CreateAsrVocabularyTableOptions) (*CreateAsrVocabularyTableResult, *Response, error) {
+	var res CreateAsrVocabularyTableResult
+	sendOpt := sendOptions{
+		baseURL: s.client.BaseURL.CIURL,
+		uri:     "/asrhotvocabtable",
+		method:  http.MethodPost,
+		body:    opt,
+		result:  &res,
+	}
+	resp, err := s.client.send(ctx, &sendOpt)
+	return &res, resp, err
+}
+
+// DeleteAsrVocabularyTable TODO
+func (s *CIService) DeleteAsrVocabularyTable(ctx context.Context, tableId string) (*Response, error) {
+	sendOpt := sendOptions{
+		baseURL: s.client.BaseURL.CIURL,
+		uri:     "/asrhotvocabtable/" + tableId,
+		method:  http.MethodDelete,
+	}
+	resp, err := s.client.send(ctx, &sendOpt)
+	return resp, err
+}
+
+// CreateAsrVocabularyTableOptions TODO
+type UpdateAsrVocabularyTableOptions struct {
+	XMLName             xml.Name           `xml:"Request"`
+	TableId             string             `xml:"TableId,omitempty"`
+	TableName           string             `xml:"TableName,omitempty"`
+	TableDescription    string             `xml:"TableDescription,omitempty"`
+	VocabularyWeights   []VocabularyWeight `xml:"VocabularyWeights,omitempty"`
+	VocabularyWeightStr string             `xml:"VocabularyWeightStr,omitempty"`
+}
+
+type UpdateAsrVocabularyTableResult CreateAsrVocabularyTableResult
+
+// UpdateAsrVocabularyTable TODO
+func (s *CIService) UpdateAsrVocabularyTable(ctx context.Context, opt *UpdateAsrVocabularyTableOptions) (*UpdateAsrVocabularyTableResult, *Response, error) {
+	var res UpdateAsrVocabularyTableResult
+	sendOpt := sendOptions{
+		baseURL: s.client.BaseURL.CIURL,
+		uri:     "/asrhotvocabtable",
+		method:  http.MethodPut,
+		body:    opt,
+		result:  &res,
+	}
+	resp, err := s.client.send(ctx, &sendOpt)
+	return &res, resp, err
+}
+
+type VocabularyTable struct {
+	TableId             string             `xml:"TableId,omitempty"`
+	TableName           string             `xml:"TableName,omitempty"`
+	TableDescription    string             `xml:"TableDescription,omitempty"`
+	VocabularyWeights   []VocabularyWeight `xml:"VocabularyWeights,omitempty"`
+	VocabularyWeightStr string             `xml:"VocabularyWeightStr,omitempty"`
+	CreateTime          string             `xml:"CreateTime,omitempty"`
+	UpdateTime          string             `xml:"UpdateTime,omitempty"`
+}
+
+// DescribeAsrVocabularyTableResult TODO
+type DescribeAsrVocabularyTableResult struct {
+	XMLName             xml.Name           `xml:"Response"`
+	RequestId           string             `xml:"RequestId,omitempty"`
+	TableId             string             `xml:"TableId,omitempty"`
+	TableName           string             `xml:"TableName,omitempty"`
+	TableDescription    string             `xml:"TableDescription,omitempty"`
+	VocabularyWeights   []VocabularyWeight `xml:"VocabularyWeights,omitempty"`
+	VocabularyWeightStr string             `xml:"VocabularyWeightStr,omitempty"`
+	CreateTime          string             `xml:"CreateTime,omitempty"`
+	UpdateTime          string             `xml:"UpdateTime,omitempty"`
+}
+
+// DescribeAsrVocabularyTable 查询指定的语音识别热词表
+func (s *CIService) DescribeAsrVocabularyTable(ctx context.Context, tableId string) (*DescribeAsrVocabularyTableResult, *Response, error) {
+	var res DescribeAsrVocabularyTableResult
+	sendOpt := sendOptions{
+		baseURL: s.client.BaseURL.CIURL,
+		uri:     "/asrhotvocabtable/" + tableId,
+		method:  http.MethodGet,
+		result:  &res,
+	}
+	resp, err := s.client.send(ctx, &sendOpt)
+	return &res, resp, err
+}
+
+// DescribeAsrVocabularyTablesOptions TODO
+type DescribeAsrVocabularyTablesOptions struct {
+	Offset int `url:"offset,omitempty"`
+	Limit  int `url:"limit,omitempty"`
+}
+
+type DescribeAsrVocabularyTablesResult struct {
+	XMLName         xml.Name          `xml:"Response"`
+	RequestId       string            `xml:"RequestId,omitempty"`
+	TotalCount      string            `xml:"TotalCount,omitempty"`
+	VocabularyTable []VocabularyTable `xml:"VocabularyTable,omitempty"`
+}
+
+// DescribeAsrVocabularyTables 查询语音识别热词表列表
+func (s *CIService) DescribeAsrVocabularyTables(ctx context.Context, opt *DescribeAsrVocabularyTablesOptions) (*DescribeAsrVocabularyTablesResult, *Response, error) {
+	var res DescribeAsrVocabularyTablesResult
+	sendOpt := sendOptions{
+		baseURL:  s.client.BaseURL.CIURL,
+		uri:      "/asrhotvocabtable",
+		optQuery: opt,
+		method:   http.MethodGet,
+		result:   &res,
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
 	return &res, resp, err

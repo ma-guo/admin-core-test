@@ -4,7 +4,12 @@ package views
 
 import (
 	"admincoretest/app/api/protos"
+	"admincoretest/config"
+	"encoding/json"
+	"net/http"
+	"os"
 
+	"github.com/ma-guo/admin-core/app/common/consts"
 	"github.com/ma-guo/niuhe"
 )
 
@@ -20,6 +25,19 @@ func (v *System) Test_GET(c *niuhe.Context, req *protos.NoneReq, rsp *protos.Non
 // 测试  api
 func (v *System) Test_PUT(c *niuhe.Context, req *protos.NoneReq, rsp *protos.NoneRsp) error {
 	return niuhe.NewCommError(-1, "Not Implemented")
+}
+
+// 项目文档 /api/system/docs/ 已加入验证的 skipUrl 中
+func (v *System) Docs_GET(c *niuhe.Context, req *protos.NoneReq, rsp *protos.NoneRsp) error {
+	docs, err := os.ReadFile(config.Config.Docs)
+	if err != nil {
+		niuhe.LogInfo("read docs error: %v", err)
+		return err
+	}
+	data := make(map[string]interface{})
+	json.Unmarshal(docs, &data)
+	c.JSON(http.StatusOK, data)
+	return niuhe.NewCommError(consts.CodeNoCommRsp, "success")
 }
 
 func init() {

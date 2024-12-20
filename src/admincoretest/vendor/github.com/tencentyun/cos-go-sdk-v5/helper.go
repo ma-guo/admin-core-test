@@ -382,7 +382,7 @@ func isDeliverHeader(key string) bool {
 			return true
 		}
 	}
-	return strings.HasPrefix(key, privateHeaderPrefix)
+	return strings.HasPrefix(key, privateHeaderPrefix) || strings.HasPrefix(key, "x-")
 }
 
 func deliverInitOptions(opt *InitiateMultipartUploadOptions) (*http.Header, error) {
@@ -462,4 +462,15 @@ func UnmarshalCompleteMultiUploadResult(data []byte, res *CompleteMultipartUploa
 	}
 
 	return nil
+}
+
+func GetBucketRegionFromUrl(u *url.URL) (string, string) {
+	if u == nil {
+		return "", ""
+	}
+	vec := strings.Split(u.Host, ".")
+	if len(vec) < 3 {
+		return "", ""
+	}
+	return vec[0], vec[2]
 }

@@ -1,6 +1,9 @@
 package models
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/ma-guo/admin-core/app/common/consts"
 	"github.com/ma-guo/admin-core/app/v1/protos"
 )
@@ -43,6 +46,14 @@ func (row *SysMenu) SetType(_type string) {
 	choices := consts.MenuTypeGroup.GetChoices()
 	for key, value := range choices {
 		if value == _type {
+			if key == consts.MenuTypeGroup.CATALOG.Value {
+				// 目录类型 path 需要检查是否以 / 开头
+				if strings.Index(row.Path, "/") != 0 {
+					row.Path = "/" + row.Path
+				}
+				// 目录类型 component 为 Layout
+				row.Component = "Layout"
+			}
 			row.Type = key
 			return
 		}
@@ -91,4 +102,8 @@ func (row *SysVendor) ToProps() *protos.V1VendorItem {
 		Key:        row.Key,
 		UpdateTime: row.UpdateTime.Format(consts.FullTimeLayout),
 	}
+}
+
+func (row *SysApi) GetKey() string {
+	return fmt.Sprintf("%v:%s", row.Method, row.Path)
 }

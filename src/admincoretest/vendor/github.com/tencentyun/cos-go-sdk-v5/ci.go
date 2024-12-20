@@ -43,6 +43,9 @@ type ImageProcessResult struct {
 	XMLName        xml.Name           `xml:"UploadResult"`
 	OriginalInfo   *PicOriginalInfo   `xml:"OriginalInfo,omitempty"`
 	ProcessResults []PicProcessObject `xml:"ProcessResults>Object,omitempty"`
+	// 历史兼容考虑不建议抽象单独struct防止客户使用影响
+	ProcessResultsText                string `xml:"ProcessResults>Text,omitempty"`
+	ProcessResultsWatermarkStatusCode int    `xml:"ProcessResults>WatermarkStatusCode,omitempty"`
 }
 type PicOriginalInfo struct {
 	Key       string        `xml:"Key,omitempty"`
@@ -2580,4 +2583,208 @@ func (s *CIService) AIGameRec(ctx context.Context, obj string, opt *AIGameRecOpt
 	}
 	resp, err := s.client.send(ctx, sendOpt)
 	return &res, resp, err
+}
+
+type AIPicMattingOptions struct {
+	DetectUrl     string      `url:"detect-url, omitempty" json:"-"`     // 您可以通过填写 detect-url 处理任意公网可访问的图片链接。不填写 detect-url 时，后台会默认处理 ObjectKey ，填写了 detect-url 时，后台会处理 detect-url 链接，无需再填写 ObjectKey detect-url 示例：http://www.example.com/abc.jpg ，需要进行 UrlEncode，处理后为http%25253A%25252F%25252Fwww.example.com%25252Fabc.jpg。
+	CenterLayout  int         `url:"center-layout, omitempty" json:"-"`  // 抠图主体居中显示；值为1时居中显示，值为0不做处理，默认为0
+	PaddingLayout string      `url:"padding-layout, omitempty" json:"-"` // 将处理后的图片四边进行留白，形式为 padding-layout=<dx>x<dy>，左右两边各进行 dx 像素的留白，上下两边各进行 dy 像素的留白，例如：padding-layout=20x10默认不进行留白操作，dx、dy 最大值为1000像素。
+	OptHeaders    *OptHeaders `header:"-, omitempty" url:"-" json:"-" xml:"-"`
+}
+
+// 通用抠图
+// https://cloud.tencent.com/document/product/460/106750
+func (s *CIService) AIPicMatting(ctx context.Context, ObjectKey string, opt *AIPicMattingOptions) (*Response, error) {
+	sendOpt := sendOptions{
+		baseURL:          s.client.BaseURL.BucketURL,
+		uri:              "/" + encodeURIComponent(ObjectKey) + "?ci-process=AIPicMatting",
+		method:           http.MethodGet,
+		optQuery:         opt,
+		disableCloseBody: true,
+	}
+	resp, err := s.client.send(ctx, &sendOpt)
+	return resp, err
+}
+
+type AIPortraitMattingOptions struct {
+	DetectUrl     string      `url:"detect-url, omitempty" json:"-"`     // 您可以通过填写 detect-url 处理任意公网可访问的图片链接。不填写 detect-url 时，后台会默认处理 ObjectKey ，填写了 detect-url 时，后台会处理 detect-url 链接，无需再填写 ObjectKey。 detect-url 示例：http://www.example.com/abc.jpg，需要进行 UrlEncode，处理后为http%25253A%25252F%25252Fwww.example.com%25252Fabc.jpg。
+	CenterLayout  int         `url:"center-layout, omitempty" json:"-"`  // 抠图主体居中显示；值为1时居中显示，值为0不做处理，默认为0
+	PaddingLayout string      `url:"padding-layout, omitempty" json:"-"` // 将处理后的图片四边进行留白，形式为 padding-layout=x，左右两边各进行 dx 像素的留白，上下两边各进行 dy 像素的留白，例如：padding-layout=20x10默认不进行留白操作，dx、dy最大值为1000像素。
+	OptHeaders    *OptHeaders `header:"-, omitempty" url:"-" json:"-" xml:"-"`
+}
+
+// 人像抠图
+// https://cloud.tencent.com/document/product/460/106751
+func (s *CIService) AIPortraitMatting(ctx context.Context, ObjectKey string, opt *AIPortraitMattingOptions) (*Response, error) {
+
+	sendOpt := sendOptions{
+		baseURL:          s.client.BaseURL.BucketURL,
+		uri:              "/" + encodeURIComponent(ObjectKey) + "?ci-process=AIPortraitMatting",
+		method:           http.MethodGet,
+		optQuery:         opt,
+		disableCloseBody: true,
+	}
+	resp, err := s.client.send(ctx, &sendOpt)
+	return resp, err
+}
+
+type AIRecognitionResult struct {
+	XMLName xml.Name `xml:"Response" json:"response,omitempty"`
+	// BodyJointsDetect struct {
+	// 	BodyJointsResults []struct {
+	// 		BodyJoints []struct {
+	// 			KeyPointType string `xml:"KeyPointType"`
+	// 			X            string `xml:"X"`
+	// 			Y            string `xml:"Y"`
+	// 		} `xml:"BodyJoints" json:"bodyjoints,omitempty"`
+	// 		BoundBox struct {
+	// 			Height string `xml:"Height"`
+	// 			Width  string `xml:"Width"`
+	// 			X      string `xml:"X"`
+	// 			Y      string `xml:"Y"`
+	// 		} `xml:"BoundBox" json:"boundbox,omitempty"`
+	// 		Confidence string `xml:"Confidence"`
+	// 	} `xml:"BodyJointsResults" json:"bodyjointsresults,omitempty"`
+	// 	RequestId string `xml:"RequestId"`
+	// } `xml:"BodyJointsDetect" json:"bodyjointsdetect,omitempty"`
+	// DetectLabel struct {
+	// 	Labels []struct {
+	// 		Confidence string `xml:"Confidence"`
+	// 		Name       string `xml:"Name"`
+	// 	} `xml:"Labels" json:"labels,omitempty"`
+	// } `xml:"DetectLabel" json:"detectlabel,omitempty"`
+	// OCR struct {
+	// 	Angel          string `xml:"Angel"`
+	// 	Language       string `xml:"Language"`
+	// 	PdfPageSize    string `xml:"PdfPageSize"`
+	// 	RequestId      string `xml:"RequestId"`
+	// 	TextDetections []struct {
+	// 		Confidence   string `xml:"Confidence"`
+	// 		DetectedText string `xml:"DetectedText"`
+	// 		ItemPolygon  struct {
+	// 			Height string `xml:"Height"`
+	// 			Width  string `xml:"Width"`
+	// 			X      string `xml:"X"`
+	// 			Y      string `xml:"Y"`
+	// 		} `xml:"ItemPolygon" json:"itempolygon,omitempty"`
+	// 		Polygon []struct {
+	// 			X string `xml:"X"`
+	// 			Y string `xml:"Y"`
+	// 		} `xml:"Polygon" json:"polygon,omitempty"`
+	// 		Words string `xml:"Words"`
+	// 	} `xml:"TextDetections" json:"textdetections,omitempty"`
+	// } `xml:"OCR" json:"ocr,omitempty"`
+	// EnhanceImage struct {
+	// 	EnhancedImage string `xml:"EnhancedImage"`
+	// } `xml:"EnhanceImage" json:"enhanceimage,omitempty"`
+	DetectVehicle struct {
+		Vehicles []struct {
+			Location struct {
+				Height int `xml:"Height"`
+				Width  int `xml:"Width"`
+				X      int `xml:"X"`
+				Y      int `xml:"Y"`
+			} `xml:"Location" json:"location,omitempty"`
+			Name  string `xml:"Name"`
+			Score int    `xml:"Score"`
+		} `xml:"Vehicles" json:"vehicles,omitempty"`
+	} `xml:"DetectVehicle" json:"detectvehicle,omitempty"`
+	DetectPedestrian struct {
+		Pedestrians []struct {
+			Location struct {
+				Height int `xml:"Height"`
+				Width  int `xml:"Width"`
+				X      int `xml:"X"`
+				Y      int `xml:"Y"`
+			} `xml:"Location" json:"location,omitempty"`
+			Name  string `xml:"Name"`
+			Score int    `xml:"Score"`
+		} `xml:"Pedestrians" json:"pedestrians,omitempty"`
+	} `xml:"DetectPedestrian" json:"detectpedestrian,omitempty"`
+	DetectPet struct {
+		Pets []struct {
+			Location struct {
+				Height int `xml:"Height"`
+				Width  int `xml:"Width"`
+				X      int `xml:"X"`
+				Y      int `xml:"Y"`
+			} `xml:"Location" json:"location,omitempty"`
+			Name  string `xml:"Name"`
+			Score int    `xml:"Score"`
+		} `xml:"Pets" json:"pets,omitempty"`
+	} `xml:"DetectPet" json:"detectpet,omitempty"`
+}
+
+type AIRecognitionOptions struct {
+	DetectType string      `url:"detect-type, omitempty" json:"-"`
+	OptHeaders *OptHeaders `header:"-, omitempty" url:"-" json:"-" xml:"-"`
+}
+
+// 多AI接口合一
+func (s *CIService) AIRecognition(ctx context.Context, ObjectKey string, opt *AIRecognitionOptions) (*AIRecognitionResult, *Response, error) {
+	var res AIRecognitionResult
+	sendOpt := sendOptions{
+		baseURL:  s.client.BaseURL.BucketURL,
+		uri:      "/" + encodeURIComponent(ObjectKey) + "?ci-process=ai-recognition",
+		method:   http.MethodGet,
+		optQuery: opt,
+		result:   &res,
+	}
+	resp, err := s.client.send(ctx, &sendOpt)
+	return &res, resp, err
+}
+
+type ImageSlimSuffixs struct {
+	Suffix []string `xml:"Suffix,omitempty"`
+}
+
+type ImageSlim struct {
+	XMLName  xml.Name          `xml:"ImageSlim"`
+	SlimMode string            `xml:"SlimMode,omitempty"`
+	Suffixs  *ImageSlimSuffixs `xml:"Suffixs,omitempty"`
+}
+
+type ImageSlimResult struct {
+	XMLName  xml.Name          `xml:"ImageSlim"`
+	SlimMode string            `xml:"SlimMode,omitempty"`
+	Status   string            `xml:"Status,omitempty"`
+	Suffixs  *ImageSlimSuffixs `xml:"Suffixs,omitempty"`
+}
+
+type ImageSlimOptions ImageSlim
+
+// 开通 极智压缩ImageSlim https://cloud.tencent.com/document/product/460/95042
+func (s *CIService) PutImageSlim(ctx context.Context, opt *ImageSlimOptions) (*Response, error) {
+	sendOpt := &sendOptions{
+		baseURL: s.client.BaseURL.CIURL,
+		uri:     "/?image-slim",
+		method:  http.MethodPut,
+		body:    opt,
+	}
+	resp, err := s.client.send(ctx, sendOpt)
+	return resp, err
+}
+
+// 查询 极智压缩ImageSlim https://cloud.tencent.com/document/product/460/95043
+func (s *CIService) GetImageSlim(ctx context.Context) (*ImageSlimResult, *Response, error) {
+	var res ImageSlimResult
+	sendOpt := &sendOptions{
+		baseURL: s.client.BaseURL.CIURL,
+		uri:     "/?image-slim",
+		method:  http.MethodGet,
+		result:  &res,
+	}
+	resp, err := s.client.send(ctx, sendOpt)
+	return &res, resp, err
+}
+
+// 关闭 极智压缩ImageSlim https://cloud.tencent.com/document/product/460/95044
+func (s *CIService) DeleteImageSlim(ctx context.Context) (*Response, error) {
+	sendOpt := &sendOptions{
+		baseURL: s.client.BaseURL.CIURL,
+		uri:     "/?image-slim",
+		method:  http.MethodDelete,
+	}
+	resp, err := s.client.send(ctx, sendOpt)
+	return resp, err
 }

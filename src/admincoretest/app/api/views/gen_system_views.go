@@ -19,3 +19,8 @@ func (v *_Gen_System) Test_GET(c *niuhe.Context, req *protos.SystemTestReq, rsp 
 func (v *_Gen_System) Test_PUT(c *niuhe.Context, req *protos.NoneReq, rsp *protos.NoneRsp) error {
 	return niuhe.NewCommError(-1, "Not Implemented")
 }
+
+// 项目文档
+func (v *_Gen_System) Docs_GET(c *niuhe.Context, req *protos.NoneReq, rsp *protos.NoneRsp) error {
+	return niuhe.NewCommError(-1, "Not Implemented")
+}

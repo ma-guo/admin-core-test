@@ -8,3 +8,4 @@ db:
 host: http://localhost:9999
 fileprefix: admin
 secretkey: admincore-secret-key
+docs: docs/swagger.json

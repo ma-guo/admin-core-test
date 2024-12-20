@@ -22,6 +22,7 @@ var Config struct {
 		Main    string // 数据库链接信息
 	}
 	// TODO 在这下面添加其他配置内容
+	Docs string
 }
 
 var MainDB *xorm.Engine
