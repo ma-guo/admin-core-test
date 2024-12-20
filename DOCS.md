@@ -1,6 +1,3 @@
----
-highlight: arduino-light
----
 # 本 demo 说明
 
 本文以 [admin-core-test](https://github.com/ma-guo/admin-core-test) 为例，引用的项目有 [admin-core](https://github.com/ma-guo/admin-core), [vue3-element-admin](https://github.com/ma-guo/vue3-element-admin)。大部分内容与 [admin-core-test/README.md](https://github.com/ma-guo/admin-core-test/blob/main/README.MD) 相同
