@@ -11,15 +11,31 @@
     ],
     "swagger": "2.0",
     "info": {
-        "title": "document of admincoretest",
-        "version": "1.0"
+        "title": "Admincoretest",
+        "description": "Admincoretest api documents",
+        "contact": {
+            "email": "your email address"
+        },
+        "version": "3.0.0",
+        "license": {
+            "name": "MIT",
+            "url": "github"
+        }
     },
+    "host": "",
+    "basePath": "",
     "paths": {
         "/api/system/test/": {
             "put": {
                 "description": "测试  api",
-                "security": [],
-                "tags": [],
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ],
+                "tags": [
+                    "系统API"
+                ],
                 "summary": "测试  api",
                 "parameters": [],
                 "responses": {
@@ -65,8 +81,14 @@
         "/api/system/docs/": {
             "get": {
                 "description": "项目文档",
-                "security": [],
-                "tags": [],
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ],
+                "tags": [
+                    "系统API"
+                ],
                 "summary": "项目文档",
                 "parameters": [],
                 "responses": {
@@ -112,8 +134,14 @@
         "/api/system/rpc/": {
             "post": {
                 "description": "测试 rpc",
-                "security": [],
-                "tags": [],
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ],
+                "tags": [
+                    "系统API"
+                ],
                 "summary": "测试 rpc",
                 "parameters": [
                     {
@@ -221,6 +249,13 @@
             "type": "object",
             "properties": {},
             "required": []
+        }
+    },
+    "securityDefinitions": {
+        "bearer": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }
