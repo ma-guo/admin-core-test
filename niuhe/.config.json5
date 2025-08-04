@@ -1,0 +1,11 @@
+{
+  app: "", // 为生成的代码中的 app 名称, 默认为空字符串, 空字符串时同 #app=app_name
+  gomod: "", // 为生成的代码中的 gomod 名称, 默认为为空字符串, 空字符串时同 app
+  langs: ["ts", "docs", "route"], // 为生成的语言类型, 默认为 "go"。 同时支持 "ts","docs","route","protocol", "vite" 分别为 go, typescript, swagger.json 文档, route 为生成的 go route 信息
+  tstypes: [], //  langs 中支持 "ts" 时有效, 为生成的 ts 接口文件路径, 默认为 typings/api.ts 文件, 可定义多个, 如: tsapi=["full_api_path1", "full_api_path2"]
+  tsapi: [], // langs 中支持 "ts" 时有效, 为生成的 ts 类型文件路径, 默认为 typings/types.d.ts 文件, 可定义多个, 如: tstypes=["full_types_path1","full_types_path2"]
+  tsoptional: false, // langs 支持 "ts" 时 optional 是否添加?, 默认为 false
+  showlog: false, // 为生成代码时是否生成日志, 默认为不打印日志, 打开时，日志在项目目录下 niuhe.log 中, 生成错误时可进行排查
+  endcmd: [], // 为生成代码后执行的命令, 默认为空, 一般第一个为命令名, 后续为参数, 如: go mod tidy 则定义为 ["go","mod","tidy"]
+  fire: true, // 生成代码后会显示烟花效果, 默认为 true
+}

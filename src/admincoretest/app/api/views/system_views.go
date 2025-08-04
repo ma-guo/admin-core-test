@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/ma-guo/admin-core/app/common/consts"
 	"github.com/ma-guo/niuhe"
 )
 
@@ -37,7 +36,14 @@ func (v *System) Docs_GET(c *niuhe.Context, req *protos.NoneReq, rsp *protos.Non
 	data := make(map[string]interface{})
 	json.Unmarshal(docs, &data)
 	c.JSON(http.StatusOK, data)
-	return niuhe.NewCommError(consts.CodeNoCommRsp, "success")
+	// 自己处理了输出, 就不走系统输出了
+	c.IgnoreResult()
+	return nil
+}
+
+// 测试 rpc
+func (v *System) Rpc(c *niuhe.Context, req *protos.SystemRpcReqMsg, rsp *protos.SystemRpcRspMsg) error {
+	return niuhe.NewCommError(-1, "Not Implemented, 在 init.go 中会有 log 日志")
 }
 
 func init() {

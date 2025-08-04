@@ -11,31 +11,15 @@
     ],
     "swagger": "2.0",
     "info": {
-        "title": "牛河",
-        "description": "牛河插件自动生成的接口文档, 可直接导入 apifox 使用",
-        "contact": {
-            "email": "xxx.qq.com"
-        },
-        "version": "3.0.0",
-        "license": {
-            "name": "MIT",
-            "url": "github"
-        }
+        "title": "document of admincoretest",
+        "version": "1.0"
     },
-    "host": "localhost",
-    "basePath": "",
     "paths": {
         "/api/system/test/": {
             "put": {
                 "description": "测试  api",
-                "security": [
-                    {
-                        "bearer": []
-                    }
-                ],
-                "tags": [
-                    "系统API"
-                ],
+                "security": [],
+                "tags": [],
                 "summary": "测试  api",
                 "parameters": [],
                 "responses": {
@@ -46,7 +30,7 @@
                             "properties": {
                                 "result": {
                                     "type": "number",
-                                    "description": "请求状态码"
+                                    "description": "返回状态码"
                                 },
                                 "data": {
                                     "description": "成功时返回数据",
@@ -54,7 +38,7 @@
                                 },
                                 "message": {
                                     "type": "string",
-                                    "description": "失败提示消息"
+                                    "description": "失败时的提示消息"
                                 }
                             },
                             "required": [
@@ -74,20 +58,15 @@
                 ],
                 "produces": [
                     "application/json"
-                ]
+                ],
+                "pref": "#/definitions/Admincoretest.NoneReq"
             }
         },
         "/api/system/docs/": {
             "get": {
                 "description": "项目文档",
-                "security": [
-                    {
-                        "bearer": []
-                    }
-                ],
-                "tags": [
-                    "系统API"
-                ],
+                "security": [],
+                "tags": [],
                 "summary": "项目文档",
                 "parameters": [],
                 "responses": {
@@ -98,7 +77,7 @@
                             "properties": {
                                 "result": {
                                     "type": "number",
-                                    "description": "请求状态码"
+                                    "description": "返回状态码"
                                 },
                                 "data": {
                                     "description": "成功时返回数据",
@@ -106,7 +85,7 @@
                                 },
                                 "message": {
                                     "type": "string",
-                                    "description": "失败提示消息"
+                                    "description": "失败时的提示消息"
                                 }
                             },
                             "required": [
@@ -126,7 +105,73 @@
                 ],
                 "produces": [
                     "application/json"
-                ]
+                ],
+                "pref": "#/definitions/Admincoretest.NoneReq"
+            }
+        },
+        "/api/system/rpc/": {
+            "post": {
+                "description": "测试 rpc",
+                "security": [],
+                "tags": [],
+                "summary": "测试 rpc",
+                "parameters": [
+                    {
+                        "name": "world",
+                        "in": "formData",
+                        "required": true,
+                        "type": "string",
+                        "description": "输入一个词",
+                        "x-example": "hello world",
+                        "version": "1.0.0"
+                    },
+                    {
+                        "name": "text",
+                        "in": "formData",
+                        "required": false,
+                        "type": "string",
+                        "description": "输入一个文本",
+                        "deprecated": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "测试 rpc返回参数",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "result": {
+                                    "type": "number",
+                                    "description": "返回状态码"
+                                },
+                                "data": {
+                                    "description": "成功时返回数据",
+                                    "$ref": "#/definitions/Admincoretest.SystemRpcRspMsg"
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "description": "失败时的提示消息"
+                                }
+                            },
+                            "required": [
+                                "result"
+                            ]
+                        },
+                        "examples": {
+                            "application/json": {
+                                "result": 0,
+                                "data": {}
+                            }
+                        }
+                    }
+                },
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "pref": "#/definitions/Admincoretest.SystemRpcReqMsg"
             }
         }
     },
@@ -153,13 +198,29 @@
             "type": "object",
             "properties": {},
             "required": []
-        }
-    },
-    "securityDefinitions": {
-        "bearer": {
-            "type": "apiKey",
-            "name": "Authorization",
-            "in": "header"
+        },
+        "Admincoretest.SystemRpcReqMsg": {
+            "type": "object",
+            "properties": {
+                "world": {
+                    "type": "string",
+                    "description": "输入一个词",
+                    "x-example": "hello world"
+                },
+                "text": {
+                    "type": "string",
+                    "description": "输入一个文本"
+                }
+            },
+            "required": [
+                "world",
+                "text"
+            ]
+        },
+        "Admincoretest.SystemRpcRspMsg": {
+            "type": "object",
+            "properties": {},
+            "required": []
         }
     }
 }

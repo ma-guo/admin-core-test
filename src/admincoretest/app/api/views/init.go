@@ -4,7 +4,6 @@ package views
 import (
 	"admincoretest/app/api/protos"
 
-	coreProtos "github.com/ma-guo/admin-core/app/v1/protos"
 	coreViews "github.com/ma-guo/admin-core/app/v1/views"
 	"github.com/ma-guo/niuhe"
 )
@@ -15,9 +14,9 @@ func GetModule() *niuhe.Module {
 	if thisModule == nil {
 		// thisModule = niuhe.NewModule("api")
 		// 如不需要进行 api 级权限验证，可省略 18-26行, protos/gen_routes.go 需要在 langs 中添加 route
-		routes := []*coreProtos.RouteItem{}
+		routes := []*niuhe.RouteItem{}
 		for _, route := range protos.RouteItems {
-			routes = append(routes, &coreProtos.RouteItem{
+			routes = append(routes, &niuhe.RouteItem{
 				Method: route.Method,
 				Path:   route.Path,
 				Name:   route.Name,
@@ -28,6 +27,12 @@ func GetModule() *niuhe.Module {
 		coreViews.AddSkipUrl("/api/system/docs/")
 		thisModule = niuhe.NewModuleWithProtocolFactoryFunc("api", func() niuhe.IApiProtocol {
 			return coreViews.GetProtocol()
+		})
+		// 添加错误码检测
+		thisModule.AddRouteItem(protos.RouteItems...)
+		// 接收错误码通知
+		thisModule.RegisterCodeNotify(func(code int, path string) {
+			niuhe.LogError("unexpected code: %d, path: %s", code, path)
 		})
 	}
 	return thisModule

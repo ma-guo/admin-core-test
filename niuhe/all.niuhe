@@ -1,5 +1,8 @@
 #app=admincoretest
-#langs=ts
+
+class ErrorEnum(ConstGroup):
+    NOT_FOUND = Item(404, '未找到')
+    SERVER_ERROR = Item(value=500, desc='服务器错误')
 
 class NoneReq(Message):
     pass
@@ -14,3 +17,9 @@ with services():
     GET('测试  api', '/api/system/test/', SystemTestReq, NoneRsp)
     PUT('测试  api', '/api/system/test/', NoneReq, NoneRsp)
     GET('项目文档', '/api/system/docs/', NoneReq, NoneRsp)
+    RPC('测试 rpc', '/api/system/rpc/').args(
+        world=required.StringField(desc='输入一个词', demo='hello world', ver="1.0.0"),
+        text = optional.StringField(desc='输入一个文本', depr=True)
+    ).codes(
+        ErrorEnum.NOT_FOUND, ErrorEnum.SERVER_ERROR,
+    )

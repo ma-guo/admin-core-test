@@ -18,20 +18,23 @@ db:
 ```
 
 # 更多自定义信息
-在 `niuhe` 文件夹下新建文件 `.config`, 注: 
-- .config 为本地定义文件, 不需要跟随 git 版本提交
+在 `niuhe` 文件夹下新建文件 `.config.json5`, 注:
+- .config.json5 为本地定义文件, 不需要跟随 git 版本提交
 - 配置项不能添加注释, 下列说明中配置项后面的 // 注释为实例
+
 ## 支持生成 typescript
+项目配置项位于 `niuhe/.config.json5` 文件中, 关于生成 `ts` 代码, 在 `langs` 中增加 `"ts"` 即可
+
 ```sh
-#langs=ts
-#tstypes=full_types_file_path // 完整文件地址
-#tsapi=full_api_file_path // 完整文件地址
-#tsoptional // ts 中 optional 转换为 ?
+{
+    "langs": ["ts"], // 在 langs 中添加 "ts" 支持
+}
 ```
 完整示例
-|  配置项 | 配置说明  | 示例 |
-|  ----  | ----  | --- |
-| `#langs`  | 支持的语言, 目前支持 `go`,`ts`, 默认支持 `go` | `#langs=ts`
-| `#tstypes`  | 自定义 `types.d.ts` 路径 | `#tstypes=~/admincoretest/typings/lib.props.d.ts` |
-| `#tsapi` | 自定义 `api.ts` 路径 | `#tsapi=~/admincoretest/src/utils/api.ts` |
-| `#tsoptional` | `optional` 修饰的字段添加 `?`, 默认不添加 | `#tsoptional` |
+```json5
+{
+    "langs": ["ts"], // 在 langs 中添加 "ts" 支持
+    "tstypes": ["~/admincoretest/typings/lib.props.d.ts"], // 自定义 types.d.ts 路径
+    "tsapi": ["~/admincoretest/src/utils/api.ts"], // 自定义 api.ts 路径
+}
+```

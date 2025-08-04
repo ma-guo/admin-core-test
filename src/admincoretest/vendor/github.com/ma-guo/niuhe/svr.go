@@ -118,11 +118,21 @@ func (svr *Server) GetGinEngine(loggerConfig ...gin.LoggerConfig) *gin.Engine {
 		for _, mod := range svr.modules {
 			group := svr.engine.Group(svr.PathPrefix + mod.urlPrefix)
 			for _, info := range mod.Routers(svr.niuheMiddlewares) {
+				// path2 := info.Path // another path with or without suffix "/"
+
+				// if strings.HasSuffix(info.Path, "/") {
+				// 	path2 = strings.TrimSuffix(info.Path, "/")
+				// } else {
+				// 	path2 = info.Path + "/"
+				// }
+
 				if (info.Methods & GET) != 0 {
 					group.GET(info.Path, info.HandleFunc)
+					// group.GET(path2, info.HandleFunc)
 				}
 				if (info.Methods & POST) != 0 {
 					group.POST(info.Path, info.HandleFunc)
+					// group.POST(path2, info.HandleFunc)
 				}
 				if (info.Methods & PUT) != 0 {
 					group.PUT(info.Path, info.HandleFunc)
@@ -140,6 +150,7 @@ func (svr *Server) GetGinEngine(loggerConfig ...gin.LoggerConfig) *gin.Engine {
 					group.OPTIONS(info.Path, info.HandleFunc)
 				}
 			}
+			mod.parseCodes()
 		}
 	}
 	return svr.engine

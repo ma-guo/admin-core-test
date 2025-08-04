@@ -1,0 +1,40 @@
+{
+  info: {
+    title: "Admincoretest",
+    description: "Admincoretest api documents",
+    license: {
+      // 默认不生成 license 字段
+      name: "MIT",
+      url: "github", // 证书地址
+    },
+    contact: {
+      // 联系方式
+      email: "your email address",
+    },
+    version: "3.0.0",
+  },
+  schemes: ["http", "https"],
+  consumes: ["application/x-www-form-urlencoded"], // 定义请求的 Content-Type方式, 默认为: application/x-www-form-urlencoded
+  produces: ["application/json"], // 定义返回的 Content-Type, 默认为: application/json
+  host: "", // 默认为空
+  basePath: "", // 默认为空
+  security: {
+    // 支持的 验证方式
+    bearer: {
+      // 这里为 bearer 的例子
+      type: "apiKey",
+      name: "Authorization",
+      in: "header", // bearer 放在 header 中, 可选值为 'query' | 'header' | 'path' | 'formData' | 'body'
+    },
+  },
+  tags: {
+    // tags 为 API 分组标签, 为 /mode/view/method/ 三段结构中的 view 名称, 相当于给 API 分组
+    system: "系统API",
+  },
+  format: true, // 是否格式化 json 输出, 默认为 true
+  rsp: {
+    result: "result", // 自定义 protcol 时修改 {result, data} 中的 result
+    data: "data", // 自定义 protcol 时修改 {result, data} 中的 data
+    message: "message",
+  },
+}

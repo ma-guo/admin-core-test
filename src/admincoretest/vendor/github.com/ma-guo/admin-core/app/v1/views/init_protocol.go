@@ -13,7 +13,6 @@ import (
 	"github.com/ma-guo/admin-core/xorm/services"
 
 	"github.com/ma-guo/admin-core/app/common/consts"
-	"github.com/ma-guo/admin-core/app/v1/protos"
 
 	"github.com/ma-guo/niuhe"
 	"github.com/ma-guo/zpform"
@@ -30,8 +29,8 @@ type V1ApiProtocol struct {
 	store     *cache.Cache
 	skipUrl   map[string]bool
 	proxy     niuhe.IApiProtocol
-	routes    []*protos.RouteItem // 路由列表
-	routeInit bool                // 路由是否已经初始化
+	routes    []*niuhe.RouteItem // 路由列表
+	routeInit bool               // 路由是否已经初始化
 }
 
 // 检查权限
@@ -80,14 +79,21 @@ func (proto V1ApiProtocol) checkPers(c *niuhe.Context, jwt *bearer.Bearer) error
 func (proto V1ApiProtocol) checkAuth(c *niuhe.Context) error {
 	path := c.Request.URL.Path
 	// 跳过 url 不检查权限
+	isSkipUrl := false
 	if _, has := proto.skipUrl[path]; has {
-		jtw := bearer.NewBearer(config.Config.Secretkey, 1, "tmpname")
-		c.Set(consts.Authorization, jtw)
-		return nil
+		isSkipUrl = true
+	}
+	skipOrError := func(code int, message string) error {
+		if isSkipUrl {
+			jtw := bearer.NewBearer(config.Config.Secretkey, 1, "tmpname")
+			c.Set(consts.Authorization, jtw)
+			return nil
+		}
+		return niuhe.NewCommError(code, message)
 	}
 	token := c.GetHeader(consts.Authorization)
 	if len(token) < 10 {
-		return niuhe.NewCommError(consts.AuthError, "token error")
+		return skipOrError(consts.AuthError, "token error")
 	}
 	token = token[len(consts.Bearer)+1:]
 	if old, has := proto.getCache(consts.Authorization, token); has {
@@ -96,7 +102,7 @@ func (proto V1ApiProtocol) checkAuth(c *niuhe.Context) error {
 		err := proto.checkPers(c, jwt)
 		if err != nil {
 			niuhe.LogInfo("%v %v", jwt.Username, err)
-			return niuhe.NewCommError(consts.PersError, "无API访问权限")
+			return skipOrError(consts.PersError, "无API访问权限")
 		}
 		return nil
 	}
@@ -104,12 +110,12 @@ func (proto V1ApiProtocol) checkAuth(c *niuhe.Context) error {
 	err := jwt.Parse(token)
 	if err != nil {
 		niuhe.LogInfo("%v", err)
-		return niuhe.NewCommError(consts.AuthError, err.Error())
+		return skipOrError(consts.AuthError, err.Error())
 	}
 	err = proto.checkPers(c, jwt)
 	if err != nil {
 		niuhe.LogInfo("%v %v", jwt.Username, err)
-		return niuhe.NewCommError(consts.PersError, "无API访问权限")
+		return skipOrError(consts.PersError, "无API访问权限")
 	}
 	c.Set(consts.Authorization, jwt)
 	proto.setCache(jwt, 5*time.Minute, consts.Authorization, token)
@@ -117,9 +123,9 @@ func (proto V1ApiProtocol) checkAuth(c *niuhe.Context) error {
 }
 
 // 添加路由, prefix 一般情况下设置为空即可
-func (proto *V1ApiProtocol) AddRoute(prefix string, routes []*protos.RouteItem) {
+func (proto *V1ApiProtocol) AddRoute(prefix string, routes []*niuhe.RouteItem) {
 	if proto.routes == nil {
-		proto.routes = make([]*protos.RouteItem, 0)
+		proto.routes = make([]*niuhe.RouteItem, 0)
 	}
 	// 添加前缀
 	for _, route := range routes {
@@ -197,6 +203,9 @@ func (proto V1ApiProtocol) Write(c *niuhe.Context, rsp reflect.Value, err error)
 	if proto.proxy != nil {
 		return proto.proxy.Write(c, rsp, err)
 	}
+	if c.IsIgnoreResult() {
+		return nil
+	}
 	rspInst := rsp.Interface()
 	if _, ok := rspInst.(isCustomRoot); ok {
 		c.JSON(http.StatusOK, rspInst)
@@ -204,10 +213,7 @@ func (proto V1ApiProtocol) Write(c *niuhe.Context, rsp reflect.Value, err error)
 		var response map[string]interface{}
 		if err != nil {
 			if commErr, ok := err.(niuhe.ICommError); ok {
-				if commErr.GetCode() == consts.CodeNoCommRsp {
-					// 已经处理了返回，不需要再处理
-					return nil
-				}
+				c.CheckCode(commErr.GetCode())
 				response = map[string]interface{}{
 					"result":  commErr.GetCode(),
 					"message": commErr.GetMessage(),
@@ -216,6 +222,7 @@ func (proto V1ApiProtocol) Write(c *niuhe.Context, rsp reflect.Value, err error)
 					response["data"] = rsp.Interface()
 				}
 			} else {
+				c.CheckCode(-1)
 				response = map[string]interface{}{
 					"result":  -1,
 					"message": err.Error(),

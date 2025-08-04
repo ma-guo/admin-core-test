@@ -22,7 +22,8 @@ const (
 	HEAD     int = 32
 	OPTIONS  int = 64
 
-	abortIndex int8 = math.MaxInt8 / 2
+	abortIndex int8   = math.MaxInt8 / 2
+	fileSeg    string = "/"
 )
 
 type Injector = func(*Context, interface{}) (interface{}, error)
@@ -46,13 +47,18 @@ type routeInfo struct {
 	funcValue   reflect.Value
 	pf          IApiProtocolFactory
 	middlewares []HandlerFunc
+	codes       []IntConstItem // 返回错误码
 }
+
+type CodeFunc func(code int, path string)
 
 type Module struct {
 	urlPrefix   string
 	middlewares []HandlerFunc
 	routers     []*routeInfo
 	pf          IApiProtocolFactory
+	codefunc    CodeFunc
+	routeItems  []*RouteItem
 }
 
 func NewModule(urlPrefix string) *Module {
@@ -69,12 +75,51 @@ func NewModuleWithProtocolFactory(urlPrefix string, pf IApiProtocolFactory) *Mod
 		middlewares: make([]HandlerFunc, 0),
 		routers:     make([]*routeInfo, 0),
 		pf:          pf,
+		routeItems:  make([]*RouteItem, 0),
 	}
 }
 
 func (mod *Module) Use(middlewares ...HandlerFunc) *Module {
 	mod.middlewares = append(mod.middlewares, middlewares...)
 	return mod
+}
+
+func (mod *Module) AddRouteItem(routes ...*RouteItem) {
+	mod.routeItems = append(mod.routeItems, routes...)
+
+}
+
+func (mod *Module) parseCodes() {
+	items := make([]*RouteItem, 0)
+	for _, r := range mod.routeItems {
+		if len(r.Codes) > 0 {
+			items = append(items, r)
+		}
+	}
+	for _, item := range items {
+		for _, route := range mod.routers {
+			if (item.IntMethod() & route.Methods) != 0 {
+				path := fileSeg + mod.urlPrefix + route.Path
+				if path == item.Path {
+					route.codes = append(route.codes, item.Codes...)
+					break
+				}
+			}
+		}
+	}
+
+}
+func (mod *Module) RegisterCodeNotify(handle CodeFunc) {
+	mod.codefunc = handle
+}
+
+// 获取当前的 protocol
+func (mod *Module) GetProtocol() IApiProtocol {
+	pf := mod.pf
+	if pf != nil {
+		return pf.GetProtocol()
+	}
+	return nil
 }
 
 func parseName(camelName string) string {
@@ -104,6 +149,7 @@ func (mod *Module) AddCustomRoute(methods int, path string, groupValue, funcValu
 		funcValue:   funcValue,
 		pf:          pf,
 		middlewares: middlewares,
+		codes:       []IntConstItem{},
 	})
 }
 
@@ -149,7 +195,7 @@ func (mod *Module) RegisterWithProtocolFactory(group interface{}, pf IApiProtoco
 			} else {
 				methods = GET_POST
 			}
-			path := strings.ToLower("/" + parseName(groupName) + "/" + parseName(name) + "/")
+			path := strings.ToLower(fileSeg + parseName(groupName) + fileSeg + parseName(name) + fileSeg)
 			mod.AddCustomRoute(methods, path, groupValue, m.Func, pf, middlewares)
 		}
 	}
@@ -177,12 +223,12 @@ func makeIOCloserDisposer(v io.Closer) func() {
 	}
 }
 
-func getApiGinFunc(groupValue reflect.Value, path string, funcValue reflect.Value, reqType, rspType reflect.Type, injectTypes []reflect.Type, pf IApiProtocolFactory, middlewares []HandlerFunc) gin.HandlerFunc {
+func (mod *Module) getApiGinFunc(route *routeInfo, funcValue reflect.Value, reqType, rspType reflect.Type, injectTypes []reflect.Type, pf IApiProtocolFactory, middlewares []HandlerFunc) gin.HandlerFunc {
 	injectors := make([]Injector, len(injectTypes))
 	for i, t := range injectTypes {
 		injector := globalInjectors[t]
 		if injector == nil {
-			panic(fmt.Sprintf("getApiGinFunc失败! path %s 找不到%+v类型的依赖注入器", path, t))
+			panic(fmt.Sprintf("getApiGinFunc失败! path %s 找不到%+v类型的依赖注入器", route.Path, t))
 		}
 		injectors[i] = injector
 	}
@@ -208,7 +254,7 @@ func getApiGinFunc(groupValue reflect.Value, path string, funcValue reflect.Valu
 					}
 				}()
 				args := []reflect.Value{
-					groupValue,
+					route.groupValue,
 					reflect.ValueOf(context),
 					req,
 					rsp,
@@ -248,6 +294,8 @@ func getApiGinFunc(groupValue reflect.Value, path string, funcValue reflect.Valu
 			} else {
 				rspErr = nil
 			}
+			context.codefunc = mod.codefunc
+			context.SetCodes(route.codes)
 			if err := protocol.Write(context, rsp, rspErr); err != nil {
 				panic(err)
 			}
@@ -256,7 +304,7 @@ func getApiGinFunc(groupValue reflect.Value, path string, funcValue reflect.Valu
 	}
 }
 
-func getWebGinFunc(groupValue, funcValue reflect.Value, middlewares []HandlerFunc) gin.HandlerFunc {
+func (mod *Module) getWebGinFunc(groupValue, funcValue reflect.Value, middlewares []HandlerFunc) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		context := newContext(c, middlewares)
 		context.handlers = append(context.handlers, func(c *Context) {
@@ -269,8 +317,7 @@ func getWebGinFunc(groupValue, funcValue reflect.Value, middlewares []HandlerFun
 	}
 }
 
-func getGinFunc(
-	groupValue reflect.Value, methods int, path string, funcValue reflect.Value, pf IApiProtocolFactory, middlewares []HandlerFunc,
+func (mod *Module) getGinFunc(route *routeInfo, funcValue reflect.Value, pf IApiProtocolFactory, middlewares []HandlerFunc,
 ) (ginHandler gin.HandlerFunc) {
 	funcType := funcValue.Type()
 	if funcType.Kind() != reflect.Func {
@@ -292,9 +339,9 @@ func getGinFunc(
 		for i := 4; i < numIn; i++ {
 			injectTypes[i-4] = funcType.In(i)
 		}
-		ginHandler = getApiGinFunc(groupValue, path, funcValue, reqType, rspType, injectTypes, pf, middlewares)
+		ginHandler = mod.getApiGinFunc(route, funcValue, reqType, rspType, injectTypes, pf, middlewares)
 	} else {
-		ginHandler = getWebGinFunc(groupValue, funcValue, middlewares)
+		ginHandler = mod.getWebGinFunc(route.groupValue, funcValue, middlewares)
 	}
 	return
 }
@@ -305,8 +352,7 @@ func (mod *Module) Routers(svrMiddlewares []HandlerFunc) []*routeInfo {
 		middlewares = append(middlewares, svrMiddlewares...)
 		middlewares = append(middlewares, mod.middlewares...)
 		middlewares = append(middlewares, router.middlewares...)
-		router.HandleFunc = getGinFunc(
-			router.groupValue, router.Methods, router.Path, router.funcValue, router.pf, middlewares)
+		router.HandleFunc = mod.getGinFunc(router, router.funcValue, router.pf, middlewares)
 	}
 	return mod.routers
 }

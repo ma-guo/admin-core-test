@@ -12,8 +12,8 @@ github.com/alex-ant/gomath/rational
 # github.com/aliyun/aliyun-oss-go-sdk v3.0.2+incompatible
 ## explicit
 github.com/aliyun/aliyun-oss-go-sdk/oss
-# github.com/bytedance/sonic v1.9.1
-## explicit; go 1.15
+# github.com/bytedance/sonic v1.11.6
+## explicit; go 1.16
 github.com/bytedance/sonic
 github.com/bytedance/sonic/ast
 github.com/bytedance/sonic/decoder
@@ -23,40 +23,36 @@ github.com/bytedance/sonic/internal/cpu
 github.com/bytedance/sonic/internal/decoder
 github.com/bytedance/sonic/internal/encoder
 github.com/bytedance/sonic/internal/jit
-github.com/bytedance/sonic/internal/loader
 github.com/bytedance/sonic/internal/native
 github.com/bytedance/sonic/internal/native/avx
 github.com/bytedance/sonic/internal/native/avx2
+github.com/bytedance/sonic/internal/native/neon
 github.com/bytedance/sonic/internal/native/sse
 github.com/bytedance/sonic/internal/native/types
 github.com/bytedance/sonic/internal/resolver
 github.com/bytedance/sonic/internal/rt
-github.com/bytedance/sonic/loader
 github.com/bytedance/sonic/option
 github.com/bytedance/sonic/unquote
 github.com/bytedance/sonic/utf8
-# github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311
-## explicit; go 1.15
-github.com/chenzhuoyu/base64x
+# github.com/bytedance/sonic/loader v0.1.1
+## explicit; go 1.16
+github.com/bytedance/sonic/loader
+github.com/bytedance/sonic/loader/internal/abi
+github.com/bytedance/sonic/loader/internal/rt
 # github.com/clbanning/mxj v1.8.4
 ## explicit
 github.com/clbanning/mxj
+# github.com/cloudwego/base64x v0.1.4
+## explicit; go 1.16
+github.com/cloudwego/base64x
+# github.com/cloudwego/iasm v0.2.0
+## explicit; go 1.16
+github.com/cloudwego/iasm/expr
+github.com/cloudwego/iasm/x86_64
 # github.com/dgrijalva/jwt-go v3.2.0+incompatible
 ## explicit
 github.com/dgrijalva/jwt-go
-# github.com/elastic/go-sysinfo v1.0.2
-## explicit
-github.com/elastic/go-sysinfo
-github.com/elastic/go-sysinfo/internal/registry
-github.com/elastic/go-sysinfo/providers/darwin
-github.com/elastic/go-sysinfo/providers/linux
-github.com/elastic/go-sysinfo/providers/shared
-github.com/elastic/go-sysinfo/providers/windows
-github.com/elastic/go-sysinfo/types
-# github.com/elastic/go-windows v1.0.0
-## explicit
-github.com/elastic/go-windows
-# github.com/gabriel-vasile/mimetype v1.4.2
+# github.com/gabriel-vasile/mimetype v1.4.3
 ## explicit; go 1.20
 github.com/gabriel-vasile/mimetype
 github.com/gabriel-vasile/mimetype/internal/charset
@@ -68,7 +64,7 @@ github.com/gammazero/toposort
 # github.com/gin-contrib/sse v0.1.0
 ## explicit; go 1.12
 github.com/gin-contrib/sse
-# github.com/gin-gonic/gin v1.9.1
+# github.com/gin-gonic/gin v1.10.1
 ## explicit; go 1.20
 github.com/gin-gonic/gin
 github.com/gin-gonic/gin/binding
@@ -82,11 +78,11 @@ github.com/go-playground/locales/currency
 # github.com/go-playground/universal-translator v0.18.1
 ## explicit; go 1.18
 github.com/go-playground/universal-translator
-# github.com/go-playground/validator/v10 v10.14.0
+# github.com/go-playground/validator/v10 v10.20.0
 ## explicit; go 1.18
 github.com/go-playground/validator/v10
-# github.com/go-sql-driver/mysql v1.8.1
-## explicit; go 1.18
+# github.com/go-sql-driver/mysql v1.9.3
+## explicit; go 1.21.0
 github.com/go-sql-driver/mysql
 # github.com/goccy/go-json v0.10.2
 ## explicit; go 1.12
@@ -119,20 +115,18 @@ github.com/gorilla/securecookie
 # github.com/gorilla/sessions v1.2.1
 ## explicit
 github.com/gorilla/sessions
-# github.com/joeshaw/multierror v0.0.0-20140124173710-69b34d4ec901
-## explicit
-github.com/joeshaw/multierror
 # github.com/json-iterator/go v1.1.12
 ## explicit; go 1.12
 github.com/json-iterator/go
-# github.com/klauspost/cpuid/v2 v2.2.4
+# github.com/klauspost/cpuid/v2 v2.2.7
 ## explicit; go 1.15
 github.com/klauspost/cpuid/v2
-# github.com/leodido/go-urn v1.2.4
-## explicit; go 1.16
+# github.com/leodido/go-urn v1.4.0
+## explicit; go 1.18
 github.com/leodido/go-urn
-# github.com/ma-guo/admin-core v0.1.6
-## explicit
+github.com/leodido/go-urn/scim/schema
+# github.com/ma-guo/admin-core v0.2.1
+## explicit; go 1.23.6
 github.com/ma-guo/admin-core/app/common/consts
 github.com/ma-guo/admin-core/app/v1/protos
 github.com/ma-guo/admin-core/app/v1/views
@@ -146,14 +140,14 @@ github.com/ma-guo/admin-core/utils/password
 github.com/ma-guo/admin-core/xorm/daos
 github.com/ma-guo/admin-core/xorm/models
 github.com/ma-guo/admin-core/xorm/services
-# github.com/ma-guo/niuhe v1.0.0
-## explicit
+# github.com/ma-guo/niuhe v1.0.5
+## explicit; go 1.22
 github.com/ma-guo/niuhe
 github.com/ma-guo/niuhe/db
 # github.com/ma-guo/zpform v1.0.0
 ## explicit
 github.com/ma-guo/zpform
-# github.com/mattn/go-isatty v0.0.19
+# github.com/mattn/go-isatty v0.0.20
 ## explicit; go 1.15
 github.com/mattn/go-isatty
 # github.com/mitchellh/mapstructure v1.4.3
@@ -165,10 +159,7 @@ github.com/modern-go/concurrent
 # github.com/modern-go/reflect2 v1.0.2
 ## explicit; go 1.12
 github.com/modern-go/reflect2
-# github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826
-## explicit
-github.com/mohae/deepcopy
-# github.com/mojocn/base64Captcha v1.3.6
+# github.com/mojocn/base64Captcha v1.3.8
 ## explicit; go 1.16
 github.com/mojocn/base64Captcha
 # github.com/mozillazg/go-httpheader v0.2.1
@@ -177,20 +168,14 @@ github.com/mozillazg/go-httpheader
 # github.com/patrickmn/go-cache v2.1.0+incompatible
 ## explicit
 github.com/patrickmn/go-cache
-# github.com/pelletier/go-toml/v2 v2.0.8
+# github.com/pelletier/go-toml/v2 v2.2.2
 ## explicit; go 1.16
 github.com/pelletier/go-toml/v2
 github.com/pelletier/go-toml/v2/internal/characters
 github.com/pelletier/go-toml/v2/internal/danger
 github.com/pelletier/go-toml/v2/internal/tracker
 github.com/pelletier/go-toml/v2/unstable
-# github.com/pkg/errors v0.8.1
-## explicit
-github.com/pkg/errors
-# github.com/prometheus/procfs v0.0.0-20190425082905-87a4384529e0
-## explicit
-github.com/prometheus/procfs
-# github.com/qiniu/go-sdk/v7 v7.25.1
+# github.com/qiniu/go-sdk/v7 v7.25.4
 ## explicit; go 1.14
 github.com/qiniu/go-sdk/v7
 github.com/qiniu/go-sdk/v7/auth
@@ -287,6 +272,7 @@ github.com/qiniu/go-sdk/v7/storagev2/downloader/destination
 github.com/qiniu/go-sdk/v7/storagev2/downloader/resumable_recorder
 github.com/qiniu/go-sdk/v7/storagev2/errors
 github.com/qiniu/go-sdk/v7/storagev2/http_client
+github.com/qiniu/go-sdk/v7/storagev2/internal/utils
 github.com/qiniu/go-sdk/v7/storagev2/objects
 github.com/qiniu/go-sdk/v7/storagev2/region
 github.com/qiniu/go-sdk/v7/storagev2/resolver
@@ -316,9 +302,12 @@ github.com/syndtr/goleveldb/leveldb/opt
 github.com/syndtr/goleveldb/leveldb/storage
 github.com/syndtr/goleveldb/leveldb/table
 github.com/syndtr/goleveldb/leveldb/util
-# github.com/tencentyun/cos-go-sdk-v5 v0.7.59
+# github.com/tencentyun/cos-go-sdk-v5 v0.7.68
 ## explicit; go 1.12
 github.com/tencentyun/cos-go-sdk-v5
+# github.com/tiendc/go-deepcopy v1.6.0
+## explicit; go 1.18
+github.com/tiendc/go-deepcopy
 # github.com/twitchyliquid64/golang-asm v0.15.1
 ## explicit; go 1.13
 github.com/twitchyliquid64/golang-asm/asm/arch
@@ -338,16 +327,16 @@ github.com/twitchyliquid64/golang-asm/objabi
 github.com/twitchyliquid64/golang-asm/src
 github.com/twitchyliquid64/golang-asm/sys
 github.com/twitchyliquid64/golang-asm/unsafeheader
-# github.com/ugorji/go/codec v1.2.11
+# github.com/ugorji/go/codec v1.2.12
 ## explicit; go 1.11
 github.com/ugorji/go/codec
-# github.com/xuri/efp v0.0.0-20240408161823-9ad904a10d6d
+# github.com/xuri/efp v0.0.1
 ## explicit; go 1.11
 github.com/xuri/efp
-# github.com/xuri/excelize/v2 v2.9.0
-## explicit; go 1.18
+# github.com/xuri/excelize/v2 v2.9.1
+## explicit; go 1.23.0
 github.com/xuri/excelize/v2
-# github.com/xuri/nfp v0.0.0-20240318013403-ab9948c2c4a7
+# github.com/xuri/nfp v0.0.1
 ## explicit; go 1.15
 github.com/xuri/nfp
 # github.com/ziipin-server/niuhe v1.1.1
@@ -357,22 +346,22 @@ github.com/ziipin-server/niuhe/db
 # github.com/ziipin-server/zpform v1.0.0
 ## explicit
 github.com/ziipin-server/zpform
-# golang.org/x/arch v0.3.0
-## explicit; go 1.17
+# golang.org/x/arch v0.8.0
+## explicit; go 1.18
 golang.org/x/arch/x86/x86asm
-# golang.org/x/crypto v0.28.0
-## explicit; go 1.20
+# golang.org/x/crypto v0.40.0
+## explicit; go 1.23.0
 golang.org/x/crypto/bcrypt
 golang.org/x/crypto/blowfish
 golang.org/x/crypto/md4
 golang.org/x/crypto/ripemd160
 golang.org/x/crypto/sha3
-# golang.org/x/image v0.18.0
-## explicit; go 1.18
+# golang.org/x/image v0.25.0
+## explicit; go 1.23.0
 golang.org/x/image/font
 golang.org/x/image/math/fixed
-# golang.org/x/net v0.30.0
-## explicit; go 1.18
+# golang.org/x/net v0.41.0
+## explicit; go 1.23.0
 golang.org/x/net/html
 golang.org/x/net/html/atom
 golang.org/x/net/html/charset
@@ -381,18 +370,17 @@ golang.org/x/net/http2
 golang.org/x/net/http2/h2c
 golang.org/x/net/http2/hpack
 golang.org/x/net/idna
-# golang.org/x/sync v0.8.0
-## explicit; go 1.18
+golang.org/x/net/internal/httpcommon
+# golang.org/x/sync v0.16.0
+## explicit; go 1.23.0
 golang.org/x/sync/errgroup
 golang.org/x/sync/singleflight
-# golang.org/x/sys v0.26.0
-## explicit; go 1.18
+# golang.org/x/sys v0.34.0
+## explicit; go 1.23.0
 golang.org/x/sys/cpu
 golang.org/x/sys/unix
-golang.org/x/sys/windows
-golang.org/x/sys/windows/registry
-# golang.org/x/text v0.19.0
-## explicit; go 1.18
+# golang.org/x/text v0.27.0
+## explicit; go 1.23.0
 golang.org/x/text/cases
 golang.org/x/text/encoding
 golang.org/x/text/encoding/charmap
@@ -422,11 +410,11 @@ golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
-# golang.org/x/time v0.8.0
-## explicit; go 1.18
+# golang.org/x/time v0.12.0
+## explicit; go 1.23.0
 golang.org/x/time/rate
-# google.golang.org/protobuf v1.30.0
-## explicit; go 1.11
+# google.golang.org/protobuf v1.34.1
+## explicit; go 1.17
 google.golang.org/protobuf/encoding/protowire
 google.golang.org/protobuf/internal/detrand
 google.golang.org/protobuf/internal/encoding/messageset
@@ -446,16 +434,13 @@ gopkg.in/yaml.v2
 # gopkg.in/yaml.v3 v3.0.1
 ## explicit
 gopkg.in/yaml.v3
-# howett.net/plist v0.0.0-20181124034731-591f970eefbb
-## explicit
-howett.net/plist
 # modernc.org/fileutil v1.0.0
 ## explicit
 modernc.org/fileutil
 # xorm.io/builder v0.3.11-0.20220531020008-1bd24a7dc978
 ## explicit; go 1.11
 xorm.io/builder
-# xorm.io/xorm v1.3.9
+# xorm.io/xorm v1.3.10
 ## explicit; go 1.18
 xorm.io/xorm
 xorm.io/xorm/caches

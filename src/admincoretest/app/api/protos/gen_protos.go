@@ -10,5 +10,16 @@ type NoneRsp struct {
 }
 
 type SystemTestReq struct {
-	World string `json:"world" zpf_name:"world" zpf_reqd:"true"` //	输入一个词	 示例: hello world
+	World string `json:"world" zpf_name:"world" zpf_reqd:"true"` //	输入一个词	示例: hello world
+}
+
+// 测试 rpc请求参数
+type SystemRpcReqMsg struct {
+	World string `json:"world" zpf_name:"world" zpf_reqd:"true"` //	输入一个词	示例: hello world 版本: 1.0.0
+	// Deprecated: 输入一个文本
+	Text string `json:"text" zpf_name:"text"`
+}
+
+// 测试 rpc返回参数
+type SystemRpcRspMsg struct {
 }

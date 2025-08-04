@@ -4,13 +4,16 @@ import "github.com/gin-gonic/gin"
 
 type Context struct {
 	*gin.Context
-	index    int8
-	handlers []HandlerFunc
-	sessCtrl _SessCtrl
+	index         int8
+	handlers      []HandlerFunc
+	sessCtrl      _SessCtrl
+	_ignoreResult bool
+	codes         *IntConstGroup
+	codefunc      CodeFunc
 }
 
 func newContext(c *gin.Context, middlewares []HandlerFunc) *Context {
-	return &Context{Context: c, index: -1, handlers: middlewares}
+	return &Context{Context: c, index: -1, handlers: middlewares, _ignoreResult: false, codes: nil}
 }
 
 func (c *Context) Next() {
@@ -130,4 +133,41 @@ func (c *Context) Data(code int, contentType string, data []byte) {
 func (c *Context) File(filepath string) {
 	c.beforeOutput()
 	c.Context.File(filepath)
+}
+
+// 在自定义 protocol 中不格式化返回结果, 自定义返回格式
+func (c *Context) IgnoreResult() {
+	c._ignoreResult = true
+}
+
+func (c *Context) IsIgnoreResult() bool {
+	return c._ignoreResult
+}
+
+func (c *Context) SetCodes(codes []IntConstItem) {
+	group := &IntConstGroup{
+		items: make(map[int]string),
+		keys:  []int{},
+	}
+	for _, code := range codes {
+		group.items[code.Value] = code.Name
+		group.keys = append(group.keys, code.Value)
+	}
+	c.codes = group
+}
+
+// 检查错误码
+func (c *Context) CheckCode(code int) {
+	if code == 0 || c.codes == nil || len(c.codes.keys) == 0 {
+		// 没有定义则默认包含
+		return
+	}
+	// 注册通知
+	if _, exists := c.codes.items[code]; !exists {
+		if c.codefunc != nil {
+			c.codefunc(code, c.Request.URL.Path)
+		} else {
+			LogError("unknown error code: %d with %v", code, c.Request.URL.Path)
+		}
+	}
 }

@@ -25,6 +25,9 @@ func (self DefaultApiProtocol) Read(c *Context, reqValue reflect.Value) error {
 }
 
 func (self DefaultApiProtocol) Write(c *Context, rsp reflect.Value, err error) error {
+	if c._ignoreResult {
+		return nil
+	}
 	rspInst := rsp.Interface()
 	if _, ok := rspInst.(isCustomRoot); ok {
 		c.JSON(200, rspInst)
@@ -32,6 +35,7 @@ func (self DefaultApiProtocol) Write(c *Context, rsp reflect.Value, err error) e
 		var response map[string]interface{}
 		if err != nil {
 			if commErr, ok := err.(ICommError); ok {
+				c.CheckCode(commErr.GetCode())
 				response = map[string]interface{}{
 					"result":  commErr.GetCode(),
 					"message": commErr.GetMessage(),
@@ -40,6 +44,7 @@ func (self DefaultApiProtocol) Write(c *Context, rsp reflect.Value, err error) e
 					response["data"] = rsp.Interface()
 				}
 			} else {
+				c.CheckCode(-1)
 				response = map[string]interface{}{
 					"result":  -1,
 					"message": err.Error(),
