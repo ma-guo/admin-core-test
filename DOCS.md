@@ -99,9 +99,7 @@ coreViews.GetProtocol().AddRoute("", routes)
 
 
 # 参考 niuhe/.config,json5 完整配置
-> .config 为本地定义文件, 一般不需要跟随 git 版本提交(多成员开发时每个人的环境可能不同)
-> 
-> 配置项不能添加注释, 下列说明中配置项后面的 // 注释为实例
+> .config.json5 为本地定义文件, 一般不需要跟随 git 版本提交(多成员开发时每个人的环境可能不同)
 
 ```json5
 {
