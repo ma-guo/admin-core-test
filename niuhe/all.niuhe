@@ -11,15 +11,15 @@ class NoneRsp(Message):
     pass
 
 class SystemTestReq(Message):
-    world = required.StringField(desc='输入一个词', demo='hello world')
+    world = required.String(desc='输入一个词', demo='hello world')
 
 with services():
     GET('测试  api', '/api/system/test/', SystemTestReq, NoneRsp)
     PUT('测试  api', '/api/system/test/', NoneReq, NoneRsp)
     GET('项目文档', '/api/system/docs/', NoneReq, NoneRsp)
     RPC('测试 rpc', '/api/system/rpc/').args(
-        world=required.StringField(desc='输入一个词', demo='hello world', ver="1.0.0"),
-        text = optional.StringField(desc='输入一个文本', depr=True)
+        world=required.String(desc='输入一个词', demo='hello world', ver="1.0.0"),
+        text = optional.String(desc='输入一个文本', depr=True)
     ).codes(
         ErrorEnum.NOT_FOUND, ErrorEnum.SERVER_ERROR,
     )
