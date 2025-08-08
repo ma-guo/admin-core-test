@@ -8,4 +8,20 @@
   showlog: false, // 为生成代码时是否生成日志, 默认为不打印日志, 打开时，日志在项目目录下 niuhe.log 中, 生成错误时可进行排查
   endcmd: [], // 为生成代码后执行的命令, 默认为空, 一般第一个为命令名, 后续为参数, 如: go mod tidy 则定义为 ["go","mod","tidy"]
   fire: true, // 生成代码后会显示烟花效果, 默认为 true
+  templates:[{
+    type: 'message', // 可选值有 message, route, enum 三个, 同 protocol 协议相同
+    template: './templates/ts_message.tpl', // 模板文件地址
+    output: './output/message.d.ts', // 输出文件地址
+    modes: ["api"], // 生成的 mode, url 第一部分
+  },{
+    type: 'route',
+    template: './templates/ts_route.tpl',
+    output: './output/route.ts',
+    modes: ["api"],
+  },{
+    type: 'enum',
+    template: './templates/ts_enum.tpl',
+    output: './output/enum.d.ts',
+    modes: ["api"],
+  }]
 }
